@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -18,18 +19,25 @@ import { computeTransactionStats, initialOf } from './model/perfil-view';
 const AllTimeFrom = '2020-01-01';
 const AllTimeTo = '2035-12-31';
 
-function ProfileRow({ label, meta }: { label: string; meta: string }) {
+function ProfileRow({ label, meta, onPress }: { label: string; meta: string; onPress?: () => void }) {
   return (
-    <View className="flex-row items-center justify-between border-b border-ct-divider px-6 py-[19px]">
+    <Pressable
+      onPress={onPress}
+      disabled={onPress === undefined}
+      className="flex-row items-center justify-between border-b border-ct-divider px-6 py-[19px]">
       <Text className="text-base font-medium text-ct-ink">{label}</Text>
-      <Text style={{ fontFamily: FontFamily.mono }} className="text-[11.5px] text-ct-muted">
-        {meta}
-      </Text>
-    </View>
+      <View className="flex-row items-center gap-2">
+        <Text style={{ fontFamily: FontFamily.mono }} className="text-[11.5px] text-ct-muted">
+          {meta}
+        </Text>
+        {onPress !== undefined && <Text className="text-[15px] text-ct-muted">›</Text>}
+      </View>
+    </Pressable>
   );
 }
 
 export function PerfilPage() {
+  const router = useRouter();
   const session = useSession();
   const tags = useTags();
   const recurringTransactions = useRecurringTransactions();
@@ -86,8 +94,12 @@ export function PerfilPage() {
       </View>
 
       <View>
-        {/* Categorias/Recorrentes/Exportar dados have no destination screen yet -- shown, but inert until one is designed. */}
-        <ProfileRow label="Categorias" meta={tags.data !== undefined ? `${tags.data.length} tags` : '···'} />
+        {/* Recorrentes/Exportar dados have no destination screen yet -- shown, but inert until one is designed. */}
+        <ProfileRow
+          label="Categorias"
+          meta={tags.data !== undefined ? `${tags.data.length} tags` : '···'}
+          onPress={() => router.push('/categorias/index')}
+        />
         <ProfileRow label="Recorrentes" meta={activeRecurringCount !== undefined ? `${activeRecurringCount} ativas` : '···'} />
         <ProfileRow label="Orçamentos" meta={currentMonthLabel} />
         <ProfileRow label="Moeda" meta="BRL" />
