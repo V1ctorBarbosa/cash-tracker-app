@@ -1,0 +1,14 @@
+{
+  "light": {
+    "income": "#22C55E",
+    "expense": "#EF4444",
+    "savings": "#3B82F6",
+    "muted": "#6B7280"
+  },
+  "dark": {
+    "income": "#22C55E",
+    "expense": "#EF4444",
+    "savings": "#3B82F6",
+    "muted": "#9CA3AF"
+  }
+}

@@ -7,6 +7,16 @@ import '@/global.css';
 
 import { Platform } from 'react-native';
 
+import palette from '@/constants/palette.json';
+
+/**
+ * Every color the app uses -- UI chrome and domain colors (income/expense/savings) alike --
+ * is centralized here, keyed by light/dark. Read it through useTheme() (@/hooks/use-theme)
+ * for a value that switches at runtime with the system color scheme; nothing should hardcode
+ * a hex value inline. The income/expense/savings/muted entries come from palette.json, the one
+ * source both this file and tailwind.config.js read from -- see the comment there for why
+ * NativeWind's `ct-*` utility classes need that indirection instead of importing this file.
+ */
 export const Colors = {
   light: {
     text: '#000000',
@@ -14,6 +24,7 @@ export const Colors = {
     backgroundElement: '#F0F0F3',
     backgroundSelected: '#E0E1E6',
     textSecondary: '#60646C',
+    ...palette.light,
   },
   dark: {
     text: '#ffffff',
@@ -21,6 +32,7 @@ export const Colors = {
     backgroundElement: '#212225',
     backgroundSelected: '#2E3135',
     textSecondary: '#B0B4BA',
+    ...palette.dark,
   },
 } as const;
 
