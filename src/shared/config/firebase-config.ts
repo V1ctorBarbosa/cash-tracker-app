@@ -16,8 +16,6 @@ export const firebaseConfig = {
  * The "Web client" OAuth client id Firebase Auth creates when Google sign-in is enabled.
  * @react-native-google-signin/google-signin needs this even on Android/iOS, because it is
  * what Firebase uses server-side to verify the Google ID token.
- *
- * REPLACE_ME: fill in once Google sign-in is enabled (Firebase console -> Authentication ->
- * Sign-in method -> Google -> Web SDK configuration).
  */
-export const googleWebClientId = 'REPLACE_ME.apps.googleusercontent.com';
+export const googleWebClientId =
+  '1023825986111-vibvmcc90g7c9fuqqgs0fmu69nek3ug7.apps.googleusercontent.com';
