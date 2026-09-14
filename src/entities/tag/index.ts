@@ -1,1 +1,1 @@
-export { useTags, type TagDto } from './model/tag';
+export { useTags, useCreateTag, useUpdateTag, useDeleteTag, type TagDto, type UpsertTagRequest } from './model/tag';

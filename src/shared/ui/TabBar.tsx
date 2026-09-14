@@ -6,6 +6,7 @@ import { Colors, FontFamily } from '@/constants/theme';
 
 const TabLabels: Record<string, string> = {
   index: 'início',
+  historico: 'histórico',
   lancar: 'lançar',
   orcamento: 'orçamento',
   perfil: 'perfil',
@@ -37,8 +38,8 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
         return (
           <Pressable key={route.key} onPress={handlePress} className="flex-1 items-center">
             <Text
-              style={{ fontFamily: FontFamily.mono, letterSpacing: 1.4, color: isFocused ? Colors.light.ink : Colors.light.navInactive }}
-              className="text-[10px] uppercase">
+              style={{ fontFamily: FontFamily.mono, letterSpacing: 0.45, color: isFocused ? Colors.light.ink : Colors.light.navInactive }}
+              className="text-[9px] uppercase">
               {label}
             </Text>
           </Pressable>

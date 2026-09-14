@@ -2,6 +2,7 @@ export {
   useTransactions,
   useTransaction,
   useCreateTransaction,
+  useUpdateTransaction,
   useDeleteTransaction,
   getPaymentMethodLabel,
   TransactionType,

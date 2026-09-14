@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { deleteRequest, getJson, postJson } from '@/shared/api/http-client';
+import { deleteRequest, getJson, postJson, putJson } from '@/shared/api/http-client';
 
 export const TransactionType = { Income: 'Income', Expense: 'Expense' } as const;
 export type TransactionType = (typeof TransactionType)[keyof typeof TransactionType];
@@ -73,6 +73,19 @@ export function useCreateTransaction() {
 
   return useMutation({
     mutationFn: (request: CreateTransactionRequest) => postJson<CreateTransactionRequest, TransactionDto>('/transactions', request),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: DashboardQueryKeyPrefix });
+    },
+  });
+}
+
+export function useUpdateTransaction() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ transactionId, request }: { transactionId: string; request: CreateTransactionRequest }) =>
+      putJson<CreateTransactionRequest, TransactionDto>(`/transactions/${transactionId}`, request),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: DashboardQueryKeyPrefix });

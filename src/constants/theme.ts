@@ -25,6 +25,9 @@ export function categoricalColorAt(index: number): string {
   return CategoricalChartColors[index % CategoricalChartColors.length];
 }
 
+/** The fixed set of colors a user can assign to a tag (nova tag's color picker). */
+export const TagColorSwatches = ['#3f4a35', '#6c7f57', '#8aa07f', '#9fb2bb', '#4a5f6b', '#c9b99a', '#8c4a33', '#b9b3a1'] as const;
+
 /** Font family names as registered with useFonts() in the root layout — match @expo-google-fonts export names exactly. */
 export const FontFamily = {
   displayWordmark: 'Michroma_400Regular',

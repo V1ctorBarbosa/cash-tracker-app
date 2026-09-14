@@ -9,7 +9,9 @@
     "accent": "#5f7148",
     "accentDeep": "#3f4a35",
     "danger": "#8c4a33",
-    "navInactive": "#9a9c90"
+    "navInactive": "#9a9c90",
+    "groupBg": "#e2dfd4",
+    "rowDivider": "#dcd8cb"
   },
   "dark": {
     "ink": "#1a1c18",
@@ -21,6 +23,8 @@
     "accent": "#5f7148",
     "accentDeep": "#3f4a35",
     "danger": "#8c4a33",
-    "navInactive": "#9a9c90"
+    "navInactive": "#9a9c90",
+    "groupBg": "#e2dfd4",
+    "rowDivider": "#dcd8cb"
   }
 }
