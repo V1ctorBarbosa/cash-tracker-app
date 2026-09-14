@@ -5,5 +5,5 @@ import { EditarRecorrenciaPage } from '@/pages/editar-recorrencia/EditarRecorren
 export default function EditarRecorrenciaRoute() {
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  return <EditarRecorrenciaPage recurringTransactionId={id} />;
+  return <EditarRecorrenciaPage key={id} recurringTransactionId={id} />;
 }

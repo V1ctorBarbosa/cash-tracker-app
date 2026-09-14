@@ -98,12 +98,12 @@ export function PerfilPage() {
         <ProfileRow
           label="Categorias"
           meta={tags.data !== undefined ? `${tags.data.length} tags` : '···'}
-          onPress={() => router.push('/categorias/index')}
+          onPress={() => router.push('/categorias')}
         />
         <ProfileRow
           label="Recorrentes"
           meta={activeRecurringCount !== undefined ? `${activeRecurringCount} ativas` : '···'}
-          onPress={() => router.push('/recorrentes/index')}
+          onPress={() => router.push('/recorrentes')}
         />
         <ProfileRow label="Orçamentos" meta={currentMonthLabel} />
         <ProfileRow label="Moeda" meta="BRL" />
