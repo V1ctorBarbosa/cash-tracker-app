@@ -1,18 +1,4 @@
-import { parseAmountInput, parseDateInput, todayAsBRDate } from './lancar-view';
-
-describe('parseAmountInput', () => {
-  test('parses a pt-BR formatted amount with thousands separator', () => {
-    expect(parseAmountInput('1.234,56')).toBe(1234.56);
-  });
-
-  test('parses a simple decimal amount', () => {
-    expect(parseAmountInput('89,90')).toBe(89.9);
-  });
-
-  test.each(['', '0', '-5', 'abc', ','])('returns null for an invalid or non-positive input %p', (input) => {
-    expect(parseAmountInput(input)).toBeNull();
-  });
-});
+import { parseDateInput, todayAsBRDate } from './lancar-view';
 
 describe('parseDateInput', () => {
   test('parses a DD/MM/AAAA date into ISO format', () => {

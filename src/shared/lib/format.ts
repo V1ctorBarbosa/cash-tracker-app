@@ -9,3 +9,10 @@ export function formatAmount(value: number): string {
 export function formatCurrency(value: number): string {
   return `R$ ${formatAmount(value)}`;
 }
+
+/** "1.234,56" or "89,90" -> 1234.56, or null when the input isn't a positive number. */
+export function parseAmountInput(rawAmount: string): number | null {
+  const normalized = rawAmount.trim().replace(/\./g, '').replace(',', '.');
+  const value = Number(normalized);
+  return Number.isFinite(value) && value > 0 ? value : null;
+}

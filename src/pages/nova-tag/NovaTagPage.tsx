@@ -3,9 +3,10 @@ import { useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useCreateTag, useDeleteTag, useTags, useUpdateTag, type TagDto } from '@/entities/tag';
+import { useCreateTag, useDeleteTag, useTags, useUpdateTag } from '@/entities/tag';
 import { TransactionType, useTransactions, useUpdateTransaction, type CreateTransactionRequest } from '@/entities/transaction';
 import { Colors, FontFamily, TagColorSwatches } from '@/constants/theme';
+import { Chip } from '@/shared/ui/Chip';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 
 import { findReplacementCandidates } from './model/nova-tag-view';
@@ -220,9 +221,9 @@ export function NovaTagPage({ tagId }: { tagId?: string }) {
             </Text>
             <View className="flex-row flex-wrap gap-2">
               {replacementCandidates.map((candidate) => (
-                <ReplacementChip
+                <Chip
                   key={candidate.id}
-                  candidate={candidate}
+                  label={candidate.name}
                   selected={replacementTagId === candidate.id}
                   onPress={() => setReplacementTagId(candidate.id)}
                 />
@@ -255,18 +256,5 @@ export function NovaTagPage({ tagId }: { tagId?: string }) {
         </View>
       </ScrollView>
     </SafeAreaView>
-  );
-}
-
-function ReplacementChip({ candidate, selected, onPress }: { candidate: TagDto; selected: boolean; onPress: () => void }) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={{ backgroundColor: selected ? Colors.light.ink : 'transparent' }}
-      className="border border-ct-ink px-[14px] py-[9px]">
-      <Text style={{ color: selected ? Colors.light.card : Colors.light.ink }} className="text-[13px] font-medium">
-        {candidate.name}
-      </Text>
-    </Pressable>
   );
 }

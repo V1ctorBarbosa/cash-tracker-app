@@ -7,9 +7,11 @@ import { useCreateRecurringTransaction } from '@/entities/recurring-transaction'
 import { useTags } from '@/entities/tag';
 import { getPaymentMethodLabel, PaymentMethod, TransactionType, useCreateTransaction } from '@/entities/transaction';
 import { Colors, FontFamily } from '@/constants/theme';
+import { parseAmountInput } from '@/shared/lib/format';
+import { Chip } from '@/shared/ui/Chip';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 
-import { parseAmountInput, parseDateInput, todayAsBRDate } from './model/lancar-view';
+import { parseDateInput, todayAsBRDate } from './model/lancar-view';
 
 const PaymentMethodOptions = Object.values(PaymentMethod);
 
@@ -21,22 +23,9 @@ function FieldLabel({ children }: { children: string }) {
   );
 }
 
-function Chip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={{ backgroundColor: selected ? Colors.light.ink : 'transparent' }}
-      className="border border-ct-ink px-[14px] py-[9px]">
-      <Text style={{ color: selected ? Colors.light.card : Colors.light.ink }} className="text-[13px] font-medium">
-        {label}
-      </Text>
-    </Pressable>
-  );
-}
-
 export function LancarPage() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ type?: string }>();
+  const params = useLocalSearchParams<{ type?: string; recurring?: string }>();
   const initialType = params.type === TransactionType.Income ? TransactionType.Income : TransactionType.Expense;
 
   const tags = useTags();
@@ -49,10 +38,17 @@ export function LancarPage() {
   const [tagId, setTagId] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.Pix);
   const [dateInput, setDateInput] = useState(todayAsBRDate());
-  const [isRecurring, setIsRecurring] = useState(false);
+  const [isRecurring, setIsRecurring] = useState(params.recurring === 'true');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const tagsForType = tags.data?.filter((tag) => tag.kind === type) ?? [];
+
   const isSaving = createTransaction.isPending || createRecurringTransaction.isPending;
+
+  function handleChangeType(nextType: TransactionType) {
+    setType(nextType);
+    setTagId(null);
+  }
 
   async function handlePressSave() {
     setErrorMessage(null);
@@ -115,7 +111,7 @@ export function LancarPage() {
 
           <View className="flex-row border border-ct-ink">
             <Pressable
-              onPress={() => setType(TransactionType.Expense)}
+              onPress={() => handleChangeType(TransactionType.Expense)}
               style={{ backgroundColor: type === TransactionType.Expense ? Colors.light.ink : 'transparent' }}
               className="flex-1 items-center py-[13px]">
               <Text style={{ color: type === TransactionType.Expense ? Colors.light.card : Colors.light.ink }} className="text-sm font-semibold">
@@ -123,7 +119,7 @@ export function LancarPage() {
               </Text>
             </Pressable>
             <Pressable
-              onPress={() => setType(TransactionType.Income)}
+              onPress={() => handleChangeType(TransactionType.Income)}
               style={{ backgroundColor: type === TransactionType.Income ? Colors.light.ink : 'transparent' }}
               className="flex-1 items-center py-[13px]">
               <Text style={{ color: type === TransactionType.Income ? Colors.light.card : Colors.light.ink }} className="text-sm font-semibold">
@@ -162,11 +158,9 @@ export function LancarPage() {
 
         <View className="gap-3 px-6 pt-6">
           <FieldLabel>categoria</FieldLabel>
-          {tags.data !== undefined && tags.data.length === 0 && (
-            <Text className="text-xs text-ct-muted">Nenhuma categoria ainda.</Text>
-          )}
+          {tagsForType.length === 0 && <Text className="text-xs text-ct-muted">Nenhuma categoria ainda.</Text>}
           <View className="flex-row flex-wrap gap-2">
-            {tags.data?.map((tag) => (
+            {tagsForType.map((tag) => (
               <Chip key={tag.id} label={tag.name} selected={tagId === tag.id} onPress={() => setTagId(tag.id)} />
             ))}
           </View>
