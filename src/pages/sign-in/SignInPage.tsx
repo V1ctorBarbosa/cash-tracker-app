@@ -3,9 +3,8 @@ import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { signInWithGoogle } from '@/features/auth';
-import { Colors, brandStripeColors } from '@/constants/theme';
+import { Colors, FontFamily } from '@/constants/theme';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
-import { GoogleIcon } from '@/shared/ui/icons/GoogleIcon';
 
 export function SignInPage() {
   const [isSigningIn, setIsSigningIn] = useState(false);
@@ -25,39 +24,33 @@ export function SignInPage() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white dark:bg-black">
-      <View className="flex-1 justify-center gap-8 px-7">
-        <View className="h-32 flex-row overflow-hidden rounded-2xl">
-          {brandStripeColors.map((color) => (
-            <View key={color} className="flex-1" style={{ backgroundColor: color }} />
-          ))}
-        </View>
-
-        <View className="gap-2">
-          <Text className="text-6xl font-bold uppercase leading-[0.9] text-ct-savings">Cash{'\n'}Track</Text>
-          <Text className="max-w-[270px] text-base leading-6 text-ct-muted">
-            Registre suas receitas e despesas. Veja o saldo se mover.
-          </Text>
-        </View>
+    <SafeAreaView className="flex-1 justify-between gap-6 bg-ct-paper px-7 py-8">
+      <View className="gap-[10px]">
+        <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 2.2 }} className="text-[11px] uppercase text-ct-muted">
+          controle financeiro pessoal
+        </Text>
+        <Text style={{ fontFamily: FontFamily.displayWordmark, lineHeight: 47 }} className="text-[40px] tracking-tight text-ct-ink">
+          cash{'\n'}track
+        </Text>
       </View>
 
-      <View className="gap-3.5 px-7 pb-10">
-        <Pressable
-          onPress={handlePressSignIn}
-          disabled={isSigningIn}
-          className="h-[58px] flex-row items-center justify-center gap-3 rounded-2xl bg-[#F0F0F3] disabled:opacity-60 dark:bg-[#212225]">
+      <View className="flex-row items-stretch gap-5">
+        <View className="w-px bg-ct-ink" />
+        <Text className="max-w-[250px] text-[15px] leading-[22px] text-ct-ink">
+          Receitas, despesas, recorrências e metas por categoria. Um usuário, um lugar.
+        </Text>
+      </View>
+
+      <View className="gap-[14px]">
+        <Pressable onPress={handlePressSignIn} disabled={isSigningIn} className="items-center bg-ct-ink py-[17px] disabled:opacity-60">
           {isSigningIn ? (
-            <ActivityIndicator color={Colors.light.savings} />
+            <ActivityIndicator color={Colors.light.card} />
           ) : (
-            <>
-              <GoogleIcon />
-              <Text className="text-base font-bold text-ct-savings">Continuar com o Google</Text>
-            </>
+            <Text className="text-[15px] font-semibold text-ct-card">Entrar com Google</Text>
           )}
         </Pressable>
-
-        <Text className="text-center text-xs leading-5 text-ct-muted">
-          Por enquanto, o Google é a única forma de entrar.
+        <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 0.8 }} className="text-center text-[10.5px] text-ct-muted">
+          seus dados ficam na sua conta
         </Text>
 
         {errorMessage !== null && <ErrorMessage message={errorMessage} />}

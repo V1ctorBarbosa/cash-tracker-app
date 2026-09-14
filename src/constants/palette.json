@@ -1,14 +1,26 @@
 {
   "light": {
-    "income": "#22C55E",
-    "expense": "#EF4444",
-    "savings": "#3B82F6",
-    "muted": "#6B7280"
+    "ink": "#1a1c18",
+    "paper": "#eae7de",
+    "card": "#f4f2ec",
+    "muted": "#5e6357",
+    "divider": "#cfcabb",
+    "track": "#ddd9cd",
+    "accent": "#5f7148",
+    "accentDeep": "#3f4a35",
+    "danger": "#8c4a33",
+    "navInactive": "#9a9c90"
   },
   "dark": {
-    "income": "#22C55E",
-    "expense": "#EF4444",
-    "savings": "#3B82F6",
-    "muted": "#9CA3AF"
+    "ink": "#1a1c18",
+    "paper": "#eae7de",
+    "card": "#f4f2ec",
+    "muted": "#5e6357",
+    "divider": "#cfcabb",
+    "track": "#ddd9cd",
+    "accent": "#5f7148",
+    "accentDeep": "#3f4a35",
+    "danger": "#8c4a33",
+    "navInactive": "#9a9c90"
   }
 }

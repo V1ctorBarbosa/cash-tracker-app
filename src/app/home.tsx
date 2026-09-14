@@ -1,18 +1,6 @@
 import { Redirect } from 'expo-router';
 
-import { useSession } from '@/entities/session';
-import { HomePage } from '@/pages/home/HomePage';
-
+// Superseded by the (tabs) group; kept as a redirect stub rather than a stale duplicate screen.
 export default function HomeRoute() {
-  const session = useSession();
-
-  if (session.status === 'loading') {
-    return null;
-  }
-
-  if (session.status === 'signed-out') {
-    return <Redirect href="/sign-in" />;
-  }
-
-  return <HomePage userEmail={session.user.email} />;
+  return <Redirect href="/(tabs)" />;
 }

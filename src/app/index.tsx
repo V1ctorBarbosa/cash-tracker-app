@@ -13,5 +13,5 @@ export default function IndexRoute() {
     return <Redirect href="/sign-in" />;
   }
 
-  return <Redirect href="/home" />;
+  return <Redirect href="/(tabs)" />;
 }

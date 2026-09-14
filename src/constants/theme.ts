@@ -1,70 +1,41 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * Design tokens for the app's "ink on paper" visual identity (Cash Track design, direction 1a).
+ * Colors are centralized here, keyed by light/dark, and read through useTheme() (@/hooks/use-theme)
+ * for a value that switches at runtime with the system color scheme -- nothing should hardcode a
+ * hex value inline. There is no dark variant of this design yet, so Colors.dark currently mirrors
+ * Colors.light (same placeholder pattern food-track used before its own dark palette existed).
+ * The actual values live in palette.json, the one source both this file and tailwind.config.js
+ * read from -- see the comment there for why NativeWind's `ct-*` utility classes need that
+ * indirection instead of importing this file.
  */
-
-import '@/global.css';
-
-import { Platform } from 'react-native';
 
 import palette from '@/constants/palette.json';
 
-/**
- * Every color the app uses -- UI chrome and domain colors (income/expense/savings) alike --
- * is centralized here, keyed by light/dark. Read it through useTheme() (@/hooks/use-theme)
- * for a value that switches at runtime with the system color scheme; nothing should hardcode
- * a hex value inline. The income/expense/savings/muted entries come from palette.json, the one
- * source both this file and tailwind.config.js read from -- see the comment there for why
- * NativeWind's `ct-*` utility classes need that indirection instead of importing this file.
- */
 export const Colors = {
-  light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
-    ...palette.light,
-  },
-  dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
-    ...palette.dark,
-  },
+  light: palette.light,
+  dark: palette.dark,
 } as const;
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 
-/** The three-color stripe used as a brand mark (sign-in screen, error states). */
-export const brandStripeColors = [Colors.light.income, Colors.light.expense, Colors.light.savings];
+/** Ordered color sequence for chart categories (spend by tag, spend by payment method) — cycles if there are more categories than colors. */
+export const CategoricalChartColors = ['#3f4a35', '#6c7f57', '#7f9165', '#9fb2bb', '#c9b99a', '#b9b3a1'] as const;
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: 'var(--font-display)',
-    serif: 'var(--font-serif)',
-    rounded: 'var(--font-rounded)',
-    mono: 'var(--font-mono)',
-  },
-});
+export function categoricalColorAt(index: number): string {
+  return CategoricalChartColors[index % CategoricalChartColors.length];
+}
+
+/** Font family names as registered with useFonts() in the root layout — match @expo-google-fonts export names exactly. */
+export const FontFamily = {
+  displayWordmark: 'Michroma_400Regular',
+  mono: 'IBMPlexMono_400Regular',
+  monoMedium: 'IBMPlexMono_500Medium',
+  body: 'Saira_400Regular',
+  bodyMedium: 'Saira_500Medium',
+  bodySemiBold: 'Saira_600SemiBold',
+  bodyBold: 'Saira_700Bold',
+  bodyExtraBold: 'Saira_800ExtraBold',
+} as const;
 
 export const Spacing = {
   half: 2,
@@ -75,6 +46,3 @@ export const Spacing = {
   five: 32,
   six: 64,
 } as const;
-
-export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
-export const MaxContentWidth = 800;
