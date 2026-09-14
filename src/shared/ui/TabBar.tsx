@@ -6,10 +6,10 @@ import { Colors, FontFamily } from '@/constants/theme';
 
 const TabLabels: Record<string, string> = {
   index: 'início',
-  historico: 'histórico',
-  lancar: 'lançar',
-  orcamento: 'orçamento',
-  perfil: 'perfil',
+  history: 'histórico',
+  new: 'lançar',
+  budget: 'orçamento',
+  profile: 'perfil',
 };
 
 /**

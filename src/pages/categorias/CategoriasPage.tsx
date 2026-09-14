@@ -34,12 +34,17 @@ export function CategoriasPage() {
 
   return (
     <SafeAreaView className="flex-1 bg-ct-paper">
-      <View className="gap-2 border-b border-ct-ink px-6 pb-4 pt-[26px]">
+      <View className="gap-3 border-b border-ct-ink px-6 pb-4 pt-[26px]">
+        <Pressable onPress={() => router.back()} hitSlop={12} className="self-start">
+          <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 1.4 }} className="text-[11px] uppercase text-ct-muted">
+            ‹ voltar
+          </Text>
+        </Pressable>
         <View className="flex-row items-baseline justify-between">
           <Text style={{ fontFamily: FontFamily.displayWordmark }} className="text-[15px] text-ct-ink">
             categorias
           </Text>
-          <Pressable onPress={() => router.push('/categorias/nova')}>
+          <Pressable onPress={() => router.push('/categories/new')}>
             <Text className="text-[15px] font-semibold text-ct-ink">+ nova</Text>
           </Pressable>
         </View>
@@ -53,7 +58,7 @@ export function CategoriasPage() {
         {tagRows.map((tag) => (
           <Pressable
             key={tag.id}
-            onPress={() => router.push({ pathname: '/categorias/[id]', params: { id: tag.id } })}
+            onPress={() => router.push({ pathname: '/categories/[id]', params: { id: tag.id } })}
             className="flex-row items-center gap-[14px] border-b border-ct-row-divider px-6 py-[15px]">
             <View className="h-[22px] w-[22px]" style={{ backgroundColor: tag.color }} />
             <View className="min-w-0 flex-1">

@@ -18,10 +18,10 @@ export default function TabsLayout() {
   return (
     <Tabs tabBar={(props) => <TabBar {...props} />} screenOptions={{ headerShown: false }}>
       <Tabs.Screen name="index" />
-      <Tabs.Screen name="historico" />
-      <Tabs.Screen name="lancar" />
-      <Tabs.Screen name="orcamento" />
-      <Tabs.Screen name="perfil" />
+      <Tabs.Screen name="history" />
+      <Tabs.Screen name="new" />
+      <Tabs.Screen name="budget" />
+      <Tabs.Screen name="profile" />
     </Tabs>
   );
 }

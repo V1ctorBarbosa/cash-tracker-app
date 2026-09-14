@@ -84,7 +84,7 @@ export function OrcamentoPage() {
 
         <View className="px-6 pb-6 pt-7">
           <Pressable
-            onPress={() => router.push({ pathname: '/orcamento/novo-limite', params: { year: year.toString(), month: month.toString() } })}
+            onPress={() => router.push({ pathname: '/budget/new-limit', params: { year: year.toString(), month: month.toString() } })}
             className="items-center border border-ct-ink py-[14px]">
             <Text className="text-sm font-semibold text-ct-ink">definir novo limite</Text>
           </Pressable>

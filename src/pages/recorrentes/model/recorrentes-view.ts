@@ -27,6 +27,11 @@ export function countActiveRecurring(recurringTransactions: RecurringTransaction
   return recurringTransactions.filter((recurring) => recurring.active).length;
 }
 
+export function buildActiveRecurringLabel(recurringTransactions: RecurringTransactionDto[]): string {
+  const activeCount = countActiveRecurring(recurringTransactions);
+  return activeCount === 1 ? '1 ativa' : `${activeCount} ativas`;
+}
+
 function buildRecurringRow(recurring: RecurringTransactionDto, tags: TagDto[]): RecurringRow {
   const isIncome = recurring.type === TransactionType.Income;
   const tagName = tags.find((tag) => tag.id === recurring.tagId)?.name ?? recurring.tagId;

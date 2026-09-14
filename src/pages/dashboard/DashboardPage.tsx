@@ -35,7 +35,7 @@ export function DashboardPage() {
   const trailingDashboard = useDashboard(trailingRange.from, trailingRange.to);
 
   function handlePressNewTransaction(type: TransactionType) {
-    router.push({ pathname: '/(tabs)/lancar', params: { type } });
+    router.push({ pathname: '/(tabs)/new', params: { type } });
   }
 
   if (monthDashboard.isPending || trailingDashboard.isPending) {

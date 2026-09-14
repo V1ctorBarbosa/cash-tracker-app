@@ -1,5 +1,5 @@
 import { RecorrentesPage } from '@/pages/recorrentes/RecorrentesPage';
 
-export default function RecorrentesRoute() {
+export default function RecurringRoute() {
   return <RecorrentesPage />;
 }

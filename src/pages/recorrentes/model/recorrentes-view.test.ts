@@ -2,7 +2,7 @@ import type { RecurringTransactionDto } from '@/entities/recurring-transaction';
 import type { TagDto } from '@/entities/tag';
 import { Colors } from '@/constants/theme';
 
-import { buildRecurringRows, countActiveRecurring } from './recorrentes-view';
+import { buildActiveRecurringLabel, buildRecurringRows, countActiveRecurring } from './recorrentes-view';
 
 // entities/transaction's barrel pulls in TanStack Query hooks that import http-client.ts ->
 // firebase.ts -> AsyncStorage's native module, which Jest can't resolve -- mocked so this
@@ -83,5 +83,16 @@ describe('countActiveRecurring', () => {
 
   test('returns zero for an empty list', () => {
     expect(countActiveRecurring([])).toBe(0);
+  });
+});
+
+describe('buildActiveRecurringLabel', () => {
+  test('uses the singular form for exactly one active recurring definition', () => {
+    expect(buildActiveRecurringLabel([createRecurring({ active: true })])).toBe('1 ativa');
+  });
+
+  test('uses the plural form for any other count', () => {
+    expect(buildActiveRecurringLabel([createRecurring({ active: true }), createRecurring({ active: true })])).toBe('2 ativas');
+    expect(buildActiveRecurringLabel([])).toBe('0 ativas');
   });
 });

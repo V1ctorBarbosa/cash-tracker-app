@@ -7,7 +7,7 @@ import { useTags } from '@/entities/tag';
 import { FontFamily } from '@/constants/theme';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 
-import { buildRecurringRows, countActiveRecurring } from './model/recorrentes-view';
+import { buildActiveRecurringLabel, buildRecurringRows } from './model/recorrentes-view';
 
 export function RecorrentesPage() {
   const router = useRouter();
@@ -27,21 +27,26 @@ export function RecorrentesPage() {
   }
 
   const rows = buildRecurringRows(recurringTransactions.data, tags.data);
-  const activeCount = countActiveRecurring(recurringTransactions.data);
+  const activeCountLabel = buildActiveRecurringLabel(recurringTransactions.data);
 
   return (
     <SafeAreaView className="flex-1 bg-ct-paper">
-      <View className="gap-2 border-b border-ct-ink px-6 pb-4 pt-[26px]">
+      <View className="gap-3 border-b border-ct-ink px-6 pb-4 pt-[26px]">
+        <Pressable onPress={() => router.back()} hitSlop={12} className="self-start">
+          <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 1.4 }} className="text-[11px] uppercase text-ct-muted">
+            ‹ voltar
+          </Text>
+        </Pressable>
         <View className="flex-row items-baseline justify-between">
           <Text style={{ fontFamily: FontFamily.displayWordmark }} className="text-[15px] text-ct-ink">
             recorrentes
           </Text>
-          <Pressable onPress={() => router.push({ pathname: '/lancar', params: { recurring: 'true' } })}>
+          <Pressable onPress={() => router.push({ pathname: '/new', params: { recurring: 'true' } })}>
             <Text className="text-[15px] font-semibold text-ct-ink">+ nova</Text>
           </Pressable>
         </View>
         <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 0.4 }} className="text-[10.5px] text-ct-muted">
-          {activeCount === 1 ? '1 ativa' : `${activeCount} ativas`} · geradas ao abrir o mês
+          {activeCountLabel} · geradas ao abrir o mês
         </Text>
       </View>
 
@@ -50,7 +55,7 @@ export function RecorrentesPage() {
         {rows.map((row) => (
           <Pressable
             key={row.id}
-            onPress={() => router.push({ pathname: '/recorrentes/[id]', params: { id: row.id } })}
+            onPress={() => router.push({ pathname: '/recurring/[id]', params: { id: row.id } })}
             style={{ opacity: row.opacity }}
             className="gap-2 border-b border-ct-row-divider px-6 py-4">
             <View className="flex-row items-baseline justify-between gap-3">
