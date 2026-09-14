@@ -46,6 +46,11 @@ export function toIsoDate(year: number, month: number, day: number): string {
   return `${year.toString().padStart(4, '0')}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
 }
 
+/** (2026, 9) -> "2026-09" -- the shape the API's budget month path segment expects. */
+export function toYearMonth(year: number, month: number): string {
+  return `${year.toString().padStart(4, '0')}-${month.toString().padStart(2, '0')}`;
+}
+
 /** "2026-09-10" -> "10/09/2026" */
 export function formatDateBR(isoDate: string): string {
   const [year, month, day] = isoDate.split('-');

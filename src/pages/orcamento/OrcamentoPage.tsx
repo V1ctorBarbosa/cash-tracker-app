@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -10,6 +11,7 @@ import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { buildBudgetBars, buildTotals } from './model/orcamento-view';
 
 export function OrcamentoPage() {
+  const router = useRouter();
   const { year, month } = useSelectedMonth();
   const range = getMonthDateRange(year, month);
   const dashboard = useDashboard(range.from, range.to);
@@ -81,8 +83,9 @@ export function OrcamentoPage() {
         </View>
 
         <View className="px-6 pb-6 pt-7">
-          {/* "definir novo limite" has no destination screen yet -- inert until it's designed. */}
-          <Pressable className="items-center border border-ct-ink py-[14px]">
+          <Pressable
+            onPress={() => router.push({ pathname: '/orcamento/novo-limite', params: { year: year.toString(), month: month.toString() } })}
+            className="items-center border border-ct-ink py-[14px]">
             <Text className="text-sm font-semibold text-ct-ink">definir novo limite</Text>
           </Pressable>
         </View>

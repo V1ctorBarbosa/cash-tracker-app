@@ -6,6 +6,7 @@ import {
   getMonthDateRange,
   getTrailingMonthsRange,
   toIsoDate,
+  toYearMonth,
 } from './date';
 
 describe('formatMonthLong', () => {
@@ -37,6 +38,12 @@ describe('getMonthDateRange', () => {
 describe('toIsoDate', () => {
   test('pads month and day to two digits', () => {
     expect(toIsoDate(2026, 9, 5)).toBe('2026-09-05');
+  });
+});
+
+describe('toYearMonth', () => {
+  test('pads the month to two digits', () => {
+    expect(toYearMonth(2026, 9)).toBe('2026-09');
   });
 });
 

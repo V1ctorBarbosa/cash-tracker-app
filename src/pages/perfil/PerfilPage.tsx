@@ -94,13 +94,17 @@ export function PerfilPage() {
       </View>
 
       <View>
-        {/* Recorrentes/Exportar dados have no destination screen yet -- shown, but inert until one is designed. */}
+        {/* Exportar dados has no destination screen yet -- shown, but inert until one is designed. */}
         <ProfileRow
           label="Categorias"
           meta={tags.data !== undefined ? `${tags.data.length} tags` : '···'}
           onPress={() => router.push('/categorias/index')}
         />
-        <ProfileRow label="Recorrentes" meta={activeRecurringCount !== undefined ? `${activeRecurringCount} ativas` : '···'} />
+        <ProfileRow
+          label="Recorrentes"
+          meta={activeRecurringCount !== undefined ? `${activeRecurringCount} ativas` : '···'}
+          onPress={() => router.push('/recorrentes/index')}
+        />
         <ProfileRow label="Orçamentos" meta={currentMonthLabel} />
         <ProfileRow label="Moeda" meta="BRL" />
         <ProfileRow label="Exportar dados" meta="csv" />
