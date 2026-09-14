@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useDeleteRecurringTransaction, useRecurringTransactions, useUpdateRecurringTransaction } from '@/entities/recurring-transaction';
 import { Colors, FontFamily } from '@/constants/theme';
-import { formatAmount, parseAmountInput } from '@/shared/lib/format';
+import { formatAmount, maskCurrencyInput, parseAmountInput } from '@/shared/lib/format';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 
 import { buildDayPills, formatMonthYearInput, parseMonthYearInput } from './model/editar-recorrencia-view';
@@ -143,7 +143,7 @@ export function EditarRecorrenciaPage({ recurringTransactionId }: { recurringTra
             <Text className="text-xl text-ct-muted">R$</Text>
             <TextInput
               value={amount}
-              onChangeText={setAmount}
+              onChangeText={(text) => setAmount(maskCurrencyInput(text))}
               placeholder="0,00"
               placeholderTextColor={Colors.light.divider}
               keyboardType="decimal-pad"

@@ -7,7 +7,7 @@ import { useCreateRecurringTransaction } from '@/entities/recurring-transaction'
 import { useTags } from '@/entities/tag';
 import { getPaymentMethodLabel, PaymentMethod, TransactionType, useCreateTransaction } from '@/entities/transaction';
 import { Colors, FontFamily } from '@/constants/theme';
-import { parseAmountInput } from '@/shared/lib/format';
+import { maskCurrencyInput, parseAmountInput } from '@/shared/lib/format';
 import { Chip } from '@/shared/ui/Chip';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 
@@ -135,7 +135,7 @@ export function LancarPage() {
             <Text className="text-xl text-ct-muted">R$</Text>
             <TextInput
               value={amount}
-              onChangeText={setAmount}
+              onChangeText={(text) => setAmount(maskCurrencyInput(text))}
               placeholder="0,00"
               placeholderTextColor={Colors.light.divider}
               keyboardType="decimal-pad"

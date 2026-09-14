@@ -8,7 +8,7 @@ import { useUpsertBudget } from '@/entities/budget';
 import { useTags } from '@/entities/tag';
 import { Colors, FontFamily } from '@/constants/theme';
 import { getTrailingMonthsRange, toYearMonth } from '@/shared/lib/date';
-import { formatAmount, parseAmountInput } from '@/shared/lib/format';
+import { formatAmount, maskCurrencyInput, parseAmountInput } from '@/shared/lib/format';
 import { Chip } from '@/shared/ui/Chip';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 
@@ -128,7 +128,7 @@ export function NovoLimitePage({ initialYear, initialMonth }: { initialYear: num
             <Text className="text-xl text-ct-muted">R$</Text>
             <TextInput
               value={limitInput}
-              onChangeText={setLimitInput}
+              onChangeText={(text) => setLimitInput(maskCurrencyInput(text))}
               placeholder="0,00"
               placeholderTextColor={Colors.light.divider}
               keyboardType="decimal-pad"
