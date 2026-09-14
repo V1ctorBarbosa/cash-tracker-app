@@ -38,6 +38,9 @@ export const Colors = {
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 
+/** The three-color stripe used as a brand mark (sign-in screen, error states). */
+export const brandStripeColors = [Colors.light.income, Colors.light.expense, Colors.light.savings];
+
 export const Fonts = Platform.select({
   ios: {
     /** iOS `UIFontDescriptorSystemDesignDefault` */
