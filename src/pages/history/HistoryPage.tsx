@@ -6,15 +6,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTags } from '@/entities/tag';
 import { useTransactions } from '@/entities/transaction';
 import { Colors, FontFamily } from '@/constants/theme';
+import { formatMonthLong, getMonthDateRange } from '@/shared/lib/date';
+import { useSelectedMonth } from '@/shared/lib/use-selected-month';
 import { Chip } from '@/shared/ui/Chip';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
+import { PageLoader } from '@/shared/ui/PageLoader';
 
-import { filterTransactions, groupByMonth, HistoryFilter } from './model/history-view';
-
-// Wide enough to capture "all transactions ever" for a personal-scale account without a
-// dedicated backend count endpoint.
-const AllTimeFrom = '2020-01-01';
-const AllTimeTo = '2035-12-31';
+import { buildHistorySummary, filterTransactions, HistoryFilter } from './model/history-view';
 
 const FilterOptions: { value: HistoryFilter; label: string }[] = [
   { value: HistoryFilter.All, label: 'tudo' },
@@ -25,14 +23,16 @@ const FilterOptions: { value: HistoryFilter; label: string }[] = [
 
 export function HistoryPage() {
   const router = useRouter();
-  const transactions = useTransactions(AllTimeFrom, AllTimeTo);
+  const { year, month, goToPreviousMonth, goToNextMonth } = useSelectedMonth();
+  const range = getMonthDateRange(year, month);
+  const transactions = useTransactions(range.from, range.to);
   const tags = useTags();
 
   const [searchText, setSearchText] = useState('');
   const [filter, setFilter] = useState<HistoryFilter>(HistoryFilter.All);
 
   if (transactions.isPending || tags.isPending) {
-    return <SafeAreaView className="flex-1 bg-ct-paper" />;
+    return <PageLoader />;
   }
 
   if (transactions.isError || tags.isError) {
@@ -44,18 +44,23 @@ export function HistoryPage() {
   }
 
   const filteredTransactions = filterTransactions(transactions.data, tags.data, searchText, filter);
-  const groups = groupByMonth(filteredTransactions, tags.data);
+  const summary = buildHistorySummary(filteredTransactions, tags.data);
 
   return (
     <SafeAreaView className="flex-1 bg-ct-paper">
       <View className="gap-[18px] border-b border-ct-ink px-6 pb-4 pt-[26px]">
-        <View className="flex-row items-baseline justify-between">
-          <Text style={{ fontFamily: FontFamily.displayWordmark }} className="text-[15px] text-ct-ink">
-            histórico
-          </Text>
-          <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 1.8 }} className="text-[11px] uppercase text-ct-muted">
-            {transactions.data.length} itens
-          </Text>
+        <Text style={{ fontFamily: FontFamily.displayWordmark }} className="text-[15px] text-ct-ink">
+          histórico
+        </Text>
+
+        <View className="flex-row items-center justify-between border-y border-ct-ink py-[10px]">
+          <Pressable onPress={goToPreviousMonth} hitSlop={12}>
+            <Text className="text-lg text-ct-muted">‹</Text>
+          </Pressable>
+          <Text className="text-[15px] font-semibold tracking-wide text-ct-ink">{formatMonthLong(year, month)}</Text>
+          <Pressable onPress={goToNextMonth} hitSlop={12}>
+            <Text className="text-lg text-ct-muted">›</Text>
+          </Pressable>
         </View>
 
         <TextInput
@@ -74,42 +79,40 @@ export function HistoryPage() {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {groups.length === 0 && (
+        {summary.items.length === 0 && (
           <Text className="px-6 py-8 text-center text-sm text-ct-muted">Nenhum lançamento encontrado.</Text>
         )}
-        {groups.map((group) => (
-          <View key={group.month}>
-            <View className="flex-row items-baseline justify-between border-b border-t border-t-ct-ink border-b-ct-divider bg-ct-group-bg px-6 pb-[10px] pt-[14px]">
-              <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 1.8 }} className="text-[10px] uppercase text-ct-ink">
-                {group.month}
+        {summary.items.length > 0 && (
+          <View className="flex-row items-baseline justify-between border-b border-t border-t-ct-ink border-b-ct-divider bg-ct-group-bg px-6 pb-[10px] pt-[14px]">
+            <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 1.8 }} className="text-[10px] uppercase text-ct-ink">
+              {formatMonthLong(year, month)}
+            </Text>
+            <Text style={{ fontFamily: FontFamily.mono }} className="text-[10px] text-ct-muted">
+              {summary.total}
+            </Text>
+          </View>
+        )}
+        {summary.items.map((item) => (
+          <Pressable
+            key={item.id}
+            onPress={() => router.push(`/transaction/${item.id}`)}
+            className="flex-row items-center gap-[14px] border-b border-ct-row-divider px-6 py-[14px]">
+            <Text style={{ fontFamily: FontFamily.mono }} className="w-[22px] text-[13px] text-ct-muted">
+              {item.day}
+            </Text>
+            <View className="h-2 w-2" style={{ backgroundColor: item.dot }} />
+            <View className="min-w-0 flex-1">
+              <Text className="text-[15px] font-medium text-ct-ink" numberOfLines={1}>
+                {item.desc}
               </Text>
-              <Text style={{ fontFamily: FontFamily.mono }} className="text-[10px] text-ct-muted">
-                {group.total}
+              <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 0.4 }} className="text-[10px] text-ct-muted" numberOfLines={1}>
+                {item.metaLine}
               </Text>
             </View>
-            {group.items.map((item) => (
-              <Pressable
-                key={item.id}
-                onPress={() => router.push(`/transaction/${item.id}`)}
-                className="flex-row items-center gap-[14px] border-b border-ct-row-divider px-6 py-[14px]">
-                <Text style={{ fontFamily: FontFamily.mono }} className="w-[22px] text-[13px] text-ct-muted">
-                  {item.day}
-                </Text>
-                <View className="h-2 w-2" style={{ backgroundColor: item.dot }} />
-                <View className="min-w-0 flex-1">
-                  <Text className="text-[15px] font-medium text-ct-ink" numberOfLines={1}>
-                    {item.desc}
-                  </Text>
-                  <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 0.4 }} className="text-[10px] text-ct-muted" numberOfLines={1}>
-                    {item.metaLine}
-                  </Text>
-                </View>
-                <Text style={{ color: item.amountColor }} className="text-[15px] font-semibold">
-                  {item.amount}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
+            <Text style={{ color: item.amountColor }} className="text-[15px] font-semibold">
+              {item.amount}
+            </Text>
+          </Pressable>
         ))}
       </ScrollView>
     </SafeAreaView>

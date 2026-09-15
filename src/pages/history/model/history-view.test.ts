@@ -1,9 +1,9 @@
 import type { TagDto } from '@/entities/tag';
 import type { TransactionDto } from '@/entities/transaction';
 
-import { filterTransactions, groupByMonth, HistoryFilter } from './history-view';
+import { buildHistorySummary, filterTransactions, HistoryFilter } from './history-view';
 
-// getPaymentMethodLabel (used by groupByMonth) lives in a module that also exports TanStack
+// getPaymentMethodLabel (used by buildHistorySummary) lives in a module that also exports TanStack
 // Query hooks importing the Firebase client -- mocked so this pure logic can be tested without
 // pulling in AsyncStorage's native module.
 jest.mock('@/shared/api/firebase', () => ({ auth: {} }));
@@ -75,71 +75,63 @@ describe('filterTransactions', () => {
   });
 });
 
-describe('groupByMonth', () => {
-  test('groups transactions by month, newest month first', () => {
-    const transactions = [createTransaction({ id: 'jan', date: '2026-01-05' }), createTransaction({ id: 'jun', date: '2026-06-10' })];
-
-    const groups = groupByMonth(transactions, Tags);
-
-    expect(groups.map((group) => group.items[0].id)).toEqual(['jun', 'jan']);
-  });
-
-  test('sorts items within a month newest day first', () => {
+describe('buildHistorySummary', () => {
+  test('sorts items newest day first', () => {
     const transactions = [createTransaction({ id: 'early', date: '2026-06-01' }), createTransaction({ id: 'late', date: '2026-06-20' })];
 
-    const groups = groupByMonth(transactions, Tags);
+    const summary = buildHistorySummary(transactions, Tags);
 
-    expect(groups[0].items.map((item) => item.id)).toEqual(['late', 'early']);
+    expect(summary.items.map((item) => item.id)).toEqual(['late', 'early']);
   });
 
-  test('computes a positive month balance as income minus expenses, formatted with a plus sign', () => {
+  test('computes a positive balance as income minus expenses, formatted with a plus sign', () => {
     const transactions = [
       createTransaction({ id: 'income', type: 'Income', amount: 200 }),
       createTransaction({ id: 'expense', type: 'Expense', amount: 50 }),
     ];
 
-    const groups = groupByMonth(transactions, Tags);
+    const summary = buildHistorySummary(transactions, Tags);
 
-    expect(groups[0].total).toBe('saldo + 150,00');
+    expect(summary.total).toBe('saldo + 150,00');
   });
 
-  test('formats a negative month balance with a minus sign', () => {
+  test('formats a negative balance with a minus sign', () => {
     const transactions = [createTransaction({ id: 'expense', type: 'Expense', amount: 200 })];
 
-    const groups = groupByMonth(transactions, Tags);
+    const summary = buildHistorySummary(transactions, Tags);
 
-    expect(groups[0].total).toBe('saldo − 200,00');
+    expect(summary.total).toBe('saldo − 200,00');
   });
 
   test('resolves the tag name and falls back to the raw tag id when the tag no longer exists', () => {
     const transactions = [createTransaction({ tagId: 'tag-deleted' })];
 
-    const groups = groupByMonth(transactions, Tags);
+    const summary = buildHistorySummary(transactions, Tags);
 
-    expect(groups[0].items[0].metaLine).toBe('tag-deleted · Pix');
+    expect(summary.items[0].metaLine).toBe('tag-deleted · Pix');
   });
 
   test('marks an item linked to a recurring definition', () => {
     const transactions = [createTransaction({ recurringTransactionId: 'recurring-1' })];
 
-    const groups = groupByMonth(transactions, Tags);
+    const summary = buildHistorySummary(transactions, Tags);
 
-    expect(groups[0].items[0].metaLine).toBe('Mercado · Pix recorrente');
+    expect(summary.items[0].metaLine).toBe('Mercado · Pix recorrente');
   });
 
   test('omits the recurring marker for a one-off transaction', () => {
     const transactions = [createTransaction({ recurringTransactionId: null })];
 
-    const groups = groupByMonth(transactions, Tags);
+    const summary = buildHistorySummary(transactions, Tags);
 
-    expect(groups[0].items[0].metaLine).toBe('Mercado · Pix');
+    expect(summary.items[0].metaLine).toBe('Mercado · Pix');
   });
 
   test('falls back to the tag name for the item description when there is none', () => {
     const transactions = [createTransaction({ description: null })];
 
-    const groups = groupByMonth(transactions, Tags);
+    const summary = buildHistorySummary(transactions, Tags);
 
-    expect(groups[0].items[0].desc).toBe('Mercado');
+    expect(summary.items[0].desc).toBe('Mercado');
   });
 });

@@ -1,7 +1,6 @@
 import { Colors } from '@/constants/theme';
 import type { TagDto } from '@/entities/tag';
 import { getPaymentMethodLabel, TransactionType, type TransactionDto } from '@/entities/transaction';
-import { formatMonthLong } from '@/shared/lib/date';
 import { formatAmount } from '@/shared/lib/format';
 
 export const HistoryFilter = {
@@ -22,7 +21,7 @@ export type HistoryItem = {
   amountColor: string;
 };
 
-export type HistoryGroup = { month: string; total: string; items: HistoryItem[] };
+export type HistorySummary = { total: string; items: HistoryItem[] };
 
 export function filterTransactions(transactions: TransactionDto[], tags: TagDto[], searchText: string, filter: HistoryFilter): TransactionDto[] {
   const normalizedSearch = searchText.trim().toLowerCase();
@@ -45,27 +44,14 @@ export function filterTransactions(transactions: TransactionDto[], tags: TagDto[
   });
 }
 
-/** Newest month first; within a month, newest day first -- matching the design's ordering. */
-export function groupByMonth(transactions: TransactionDto[], tags: TagDto[]): HistoryGroup[] {
+/** Newest day first -- matching the design's ordering. Callers already scope `transactions` to one month via the query's from/to range. */
+export function buildHistorySummary(transactions: TransactionDto[], tags: TagDto[]): HistorySummary {
   const sorted = [...transactions].sort((a, b) => b.date.localeCompare(a.date));
-  const transactionsByMonth = new Map<string, TransactionDto[]>();
 
-  for (const transaction of sorted) {
-    const monthKey = transaction.date.slice(0, 7);
-    const monthTransactions = transactionsByMonth.get(monthKey) ?? [];
-    monthTransactions.push(transaction);
-    transactionsByMonth.set(monthKey, monthTransactions);
-  }
-
-  return [...transactionsByMonth.entries()].map(([monthKey, monthTransactions]) => {
-    const [year, month] = monthKey.split('-').map(Number);
-
-    return {
-      month: formatMonthLong(year, month),
-      total: buildMonthTotal(monthTransactions),
-      items: monthTransactions.map((transaction) => buildHistoryItem(transaction, tags)),
-    };
-  });
+  return {
+    total: buildMonthTotal(sorted),
+    items: sorted.map((transaction) => buildHistoryItem(transaction, tags)),
+  };
 }
 
 function buildMonthTotal(monthTransactions: TransactionDto[]): string {
