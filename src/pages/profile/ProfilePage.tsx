@@ -20,12 +20,6 @@ import { computeTransactionStats, initialOf } from './model/profile-view';
 const CategoriesListRoute = '/categories' as Href;
 const RecurringListRoute = '/recurring' as Href;
 
-// Wide enough to capture "all transactions ever" for a personal-scale account without a
-// dedicated backend count endpoint -- the API has no unbounded "no date filter" affordance
-// on the frontend today, so this stands in for one.
-const AllTimeFrom = '2020-01-01';
-const AllTimeTo = '2035-12-31';
-
 function ProfileRow({ label, meta, onPress }: { label: string; meta: string; onPress?: () => void }) {
   return (
     <Pressable
@@ -48,7 +42,7 @@ export function ProfilePage() {
   const session = useSession();
   const tags = useTags();
   const recurringTransactions = useRecurringTransactions();
-  const transactions = useTransactions(AllTimeFrom, AllTimeTo);
+  const transactions = useTransactions();
 
   let displayName = 'Você';
   let email = '';

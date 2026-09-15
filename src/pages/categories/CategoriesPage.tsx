@@ -10,14 +10,10 @@ import { PageLoader } from '@/shared/ui/PageLoader';
 
 import { buildTagRows } from './model/categories-view';
 
-// Wide enough to capture "all transactions ever" so usage counts are accurate.
-const AllTimeFrom = '2020-01-01';
-const AllTimeTo = '2035-12-31';
-
 export function CategoriesPage() {
   const router = useRouter();
   const tags = useTags();
-  const transactions = useTransactions(AllTimeFrom, AllTimeTo);
+  const transactions = useTransactions();
 
   if (tags.isPending || transactions.isPending) {
     return <PageLoader />;

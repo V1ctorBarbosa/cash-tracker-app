@@ -51,13 +51,44 @@ export type CreateTransactionRequest = {
   paymentMethod: PaymentMethod;
 };
 
-const TransactionsQueryKey = (from: string, to: string) => ['transactions', from, to] as const;
+/**
+ * All filters optional -- omitting `from`/`to` fetches every transaction that already exists with
+ * no date bound, but (unlike passing a wide "all time" range) does NOT trigger recurring-transaction
+ * materialization, which only runs when both `from` and `to` are given (Section 12). Screens that
+ * just need a count or a tag-usage check should omit them rather than faking a bounded range.
+ */
+export type TransactionsFilter = { from?: string; to?: string; tagId?: string };
+
+const TransactionsQueryKey = (filter: TransactionsFilter) =>
+  ['transactions', filter.from ?? null, filter.to ?? null, filter.tagId ?? null] as const;
+
+export function buildTransactionsUrl(filter: TransactionsFilter): string {
+  const params = new URLSearchParams();
+  if (filter.from !== undefined) {
+    params.set('from', filter.from);
+  }
+  if (filter.to !== undefined) {
+    params.set('to', filter.to);
+  }
+  if (filter.tagId !== undefined) {
+    params.set('tagId', filter.tagId);
+  }
+
+  const queryString = params.toString();
+  if (queryString.length === 0) {
+    return '/transactions';
+  }
+
+  return `/transactions?${queryString}`;
+}
+
 const DashboardQueryKeyPrefix = ['dashboard'] as const;
 
-export function useTransactions(from: string, to: string) {
+export function useTransactions(filter: TransactionsFilter = {}, options: { enabled?: boolean } = {}) {
   return useQuery({
-    queryKey: TransactionsQueryKey(from, to),
-    queryFn: () => getJson<TransactionDto[]>(`/transactions?from=${from}&to=${to}`),
+    queryKey: TransactionsQueryKey(filter),
+    queryFn: () => getJson<TransactionDto[]>(buildTransactionsUrl(filter)),
+    enabled: options.enabled,
   });
 }
 

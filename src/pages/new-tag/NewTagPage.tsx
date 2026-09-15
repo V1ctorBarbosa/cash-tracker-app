@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useState, type ReactNode } from 'react';
-import { Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useCreateTag, useDeleteTag, useTags, useUpdateTag, type TagDto } from '@/entities/tag';
@@ -12,15 +12,12 @@ import {
   type TransactionDto,
 } from '@/entities/transaction';
 import { Colors, FontFamily, TagColorSwatches } from '@/constants/theme';
+import { confirmDestructiveAction, showAlert } from '@/shared/lib/confirm';
 import { Chip } from '@/shared/ui/Chip';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { PageLoader } from '@/shared/ui/PageLoader';
 
 import { findReplacementCandidates } from './model/new-tag-view';
-
-// Wide enough to capture "all transactions ever", to know whether this tag is in use.
-const AllTimeFrom = '2020-01-01';
-const AllTimeTo = '2035-12-31';
 
 function KindOption({ label, isSelected, onPress }: { label: string; isSelected: boolean; onPress: () => void }) {
   let backgroundColor: string;
@@ -100,7 +97,7 @@ export function NewTagPage({ tagId }: { tagId?: string }) {
   const isEditing = tagId !== undefined;
 
   const tags = useTags();
-  const transactions = useTransactions(AllTimeFrom, AllTimeTo);
+  const transactions = useTransactions({ tagId }, { enabled: isEditing });
   const createTag = useCreateTag();
   const updateTag = useUpdateTag();
   const deleteTag = useDeleteTag();
@@ -132,7 +129,7 @@ export function NewTagPage({ tagId }: { tagId?: string }) {
   let usingTransactions: TransactionDto[] = [];
   let replacementCandidates: ReturnType<typeof findReplacementCandidates> = [];
   if (isEditing) {
-    usingTransactions = (transactions.data ?? []).filter((transaction) => transaction.tagId === tagId);
+    usingTransactions = transactions.data ?? [];
     replacementCandidates = findReplacementCandidates(tags.data ?? [], tagId, kind);
   }
 
@@ -175,15 +172,12 @@ export function NewTagPage({ tagId }: { tagId?: string }) {
 
   function handlePressDelete() {
     if (usingTransactions.length === 0) {
-      Alert.alert('Apagar tag', `Apagar "${name}"? Essa ação não pode ser desfeita.`, [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Apagar', style: 'destructive', onPress: () => void deleteWithoutReassignment() },
-      ]);
+      confirmDestructiveAction('Apagar tag', `Apagar "${name}"? Essa ação não pode ser desfeita.`, 'Apagar', () => void deleteWithoutReassignment());
       return;
     }
 
     if (replacementCandidates.length === 0) {
-      Alert.alert('Apagar tag', 'Essa tag está em uso e não há outra tag do mesmo tipo para substituí-la. Crie uma nova tag antes de apagar esta.');
+      showAlert('Apagar tag', 'Essa tag está em uso e não há outra tag do mesmo tipo para substituí-la. Crie uma nova tag antes de apagar esta.');
       return;
     }
 
