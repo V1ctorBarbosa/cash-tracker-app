@@ -1,10 +1,11 @@
 import { useState, type ReactNode } from 'react';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { signInWithGoogle } from '@/features/auth';
-import { Colors, FontFamily } from '@/constants/theme';
+import { Colors, FontFamily, LoaderSize } from '@/constants/theme';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
+import { Loader } from '@/shared/ui/Loader';
 
 const GenericSignInErrorMessage = 'Não foi possível entrar. Tente novamente.';
 
@@ -31,7 +32,7 @@ export function SignInPage() {
 
   let signInButtonContent: ReactNode;
   if (isSigningIn) {
-    signInButtonContent = <ActivityIndicator color={Colors.light.card} />;
+    signInButtonContent = <Loader size={LoaderSize.medium} color={Colors.light.card} />;
   } else {
     signInButtonContent = <Text className="text-[15px] font-semibold text-ct-card">Entrar com Google</Text>;
   }

@@ -9,6 +9,7 @@ import { getMonthDateRange, getTrailingMonthsRange, formatMonthLong } from '@/sh
 import { formatAmount, formatCurrency } from '@/shared/lib/format';
 import { useSelectedMonth } from '@/shared/lib/use-selected-month';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
+import { PageLoader } from '@/shared/ui/PageLoader';
 
 import { buildCategoryBars, buildMonthBars, buildPaymentMethodSegments } from './model/dashboard-view';
 
@@ -39,7 +40,7 @@ export function DashboardPage() {
   }
 
   if (monthDashboard.isPending || trailingDashboard.isPending) {
-    return <SafeAreaView className="flex-1 bg-ct-paper" />;
+    return <PageLoader />;
   }
 
   if (monthDashboard.isError || trailingDashboard.isError) {

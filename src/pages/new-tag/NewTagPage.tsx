@@ -14,6 +14,7 @@ import {
 import { Colors, FontFamily, TagColorSwatches } from '@/constants/theme';
 import { Chip } from '@/shared/ui/Chip';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
+import { PageLoader } from '@/shared/ui/PageLoader';
 
 import { findReplacementCandidates } from './model/new-tag-view';
 
@@ -117,7 +118,7 @@ export function NewTagPage({ tagId }: { tagId?: string }) {
   const [replacementTagId, setReplacementTagId] = useState<string | null>(null);
 
   if (isEditing && (tags.isPending || transactions.isPending)) {
-    return <SafeAreaView className="flex-1 bg-ct-paper" />;
+    return <PageLoader />;
   }
 
   if (tags.isError || transactions.isError) {

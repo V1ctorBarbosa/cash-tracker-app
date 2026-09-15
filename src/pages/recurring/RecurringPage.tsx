@@ -6,6 +6,7 @@ import { useRecurringTransactions } from '@/entities/recurring-transaction';
 import { useTags } from '@/entities/tag';
 import { FontFamily } from '@/constants/theme';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
+import { PageLoader } from '@/shared/ui/PageLoader';
 
 import { buildActiveRecurringLabel, buildRecurringRows } from './model/recurring-view';
 
@@ -15,7 +16,7 @@ export function RecurringPage() {
   const tags = useTags();
 
   if (recurringTransactions.isPending || tags.isPending) {
-    return <SafeAreaView className="flex-1 bg-ct-paper" />;
+    return <PageLoader />;
   }
 
   if (recurringTransactions.isError || tags.isError) {

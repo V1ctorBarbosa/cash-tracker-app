@@ -7,6 +7,7 @@ import { FontFamily } from '@/constants/theme';
 import { getMonthDateRange, formatMonthShort } from '@/shared/lib/date';
 import { useSelectedMonth } from '@/shared/lib/use-selected-month';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
+import { PageLoader } from '@/shared/ui/PageLoader';
 
 import { buildBudgetBars, buildTotals } from './model/budget-view';
 
@@ -17,7 +18,7 @@ export function BudgetPage() {
   const dashboard = useDashboard(range.from, range.to);
 
   if (dashboard.isPending) {
-    return <SafeAreaView className="flex-1 bg-ct-paper" />;
+    return <PageLoader />;
   }
 
   if (dashboard.isError) {

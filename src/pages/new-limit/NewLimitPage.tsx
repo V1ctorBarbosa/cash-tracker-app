@@ -11,6 +11,7 @@ import { getTrailingMonthsRange, toYearMonth } from '@/shared/lib/date';
 import { formatAmount, maskCurrencyInput, parseAmountInput } from '@/shared/lib/format';
 import { Chip } from '@/shared/ui/Chip';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
+import { PageLoader } from '@/shared/ui/PageLoader';
 
 import {
   buildExpenseTags,
@@ -56,7 +57,7 @@ export function NewLimitPage({ initialYear, initialMonth }: { initialYear: numbe
   const dashboard = useDashboard(trailingRange.from, trailingRange.to);
 
   if (tags.isPending || dashboard.isPending) {
-    return <SafeAreaView className="flex-1 bg-ct-paper" />;
+    return <PageLoader />;
   }
 
   if (tags.isError || dashboard.isError) {

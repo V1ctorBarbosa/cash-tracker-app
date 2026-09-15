@@ -4,9 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTags } from '@/entities/tag';
 import { useDeleteTransaction, useTransaction } from '@/entities/transaction';
-import { FontFamily } from '@/constants/theme';
+import { Colors, FontFamily, LoaderSize } from '@/constants/theme';
 import { formatCurrency } from '@/shared/lib/format';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
+import { Loader } from '@/shared/ui/Loader';
 
 import { buildDetailRows, buildHeadline, typeLabel } from './model/transaction-detail-view';
 
@@ -31,7 +32,11 @@ export function TransactionDetailPage({ transactionId }: { transactionId: string
   }
 
   if (transaction.isPending || tags.isPending) {
-    return <SafeAreaView className="flex-1 bg-ct-ink" />;
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-ct-ink">
+        <Loader size={LoaderSize.large} color={Colors.light.card} />
+      </SafeAreaView>
+    );
   }
 
   if (transaction.isError || tags.isError) {

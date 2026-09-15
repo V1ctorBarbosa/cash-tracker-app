@@ -13,6 +13,7 @@ import { Colors, FontFamily } from '@/constants/theme';
 import { formatAmount, maskCurrencyInput, parseAmountInput } from '@/shared/lib/format';
 import { normalizeOptionalText } from '@/shared/lib/text';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
+import { PageLoader } from '@/shared/ui/PageLoader';
 
 import { buildDayPills, formatMonthYearInput, parseMonthYearInput } from './model/edit-recurring-view';
 
@@ -92,7 +93,7 @@ export function EditRecurringPage({ recurringTransactionId }: { recurringTransac
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   if (recurringTransactions.isPending) {
-    return <SafeAreaView className="flex-1 bg-ct-paper" />;
+    return <PageLoader />;
   }
 
   if (recurringTransactions.isError || existing === undefined) {

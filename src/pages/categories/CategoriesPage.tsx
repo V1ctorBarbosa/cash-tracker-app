@@ -6,6 +6,7 @@ import { useTags } from '@/entities/tag';
 import { useTransactions } from '@/entities/transaction';
 import { FontFamily } from '@/constants/theme';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
+import { PageLoader } from '@/shared/ui/PageLoader';
 
 import { buildTagRows } from './model/categories-view';
 
@@ -19,7 +20,7 @@ export function CategoriesPage() {
   const transactions = useTransactions(AllTimeFrom, AllTimeTo);
 
   if (tags.isPending || transactions.isPending) {
-    return <SafeAreaView className="flex-1 bg-ct-paper" />;
+    return <PageLoader />;
   }
 
   if (tags.isError || transactions.isError) {

@@ -40,6 +40,13 @@ export const FontFamily = {
   bodyExtraBold: 'Saira_800ExtraBold',
 } as const;
 
+/** The three loader sizes drawn in the design -- large for a whole page, medium inline with a label, small for a tight space. */
+export const LoaderSize = {
+  large: 52,
+  medium: 30,
+  small: 16,
+} as const;
+
 export const Spacing = {
   half: 2,
   one: 4,
