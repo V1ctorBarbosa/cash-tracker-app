@@ -11,13 +11,16 @@ import {
   type CreateTransactionRequest,
   type TransactionDto,
 } from '@/entities/transaction';
-import { Colors, FontFamily, TagColorSwatches } from '@/constants/theme';
-import { confirmDestructiveAction, showAlert } from '@/shared/lib/confirm';
+import { Colors, FontFamily, TagColorGroups } from '@/constants/theme';
+import { showAlert } from '@/shared/lib/confirm';
 import { Chip } from '@/shared/ui/Chip';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { PageLoader } from '@/shared/ui/PageLoader';
 
 import { findReplacementCandidates } from './model/new-tag-view';
+
+const TotalTagColorCount = TagColorGroups.reduce((sum, group) => sum + group.colors.length, 0);
+const DefaultTagColor = TagColorGroups[0].colors[1];
 
 function KindOption({ label, isSelected, onPress }: { label: string; isSelected: boolean; onPress: () => void }) {
   let backgroundColor: string;
@@ -50,7 +53,7 @@ function ColorSwatch({ color, isSelected, onPress }: { color: string; isSelected
     borderColor = Colors.light.divider;
   }
 
-  return <Pressable onPress={onPress} style={{ backgroundColor: color, borderWidth, borderColor }} className="h-11 w-11" />;
+  return <Pressable onPress={onPress} style={{ backgroundColor: color, borderWidth, borderColor }} className="aspect-square flex-1" />;
 }
 
 function SaveAndDeleteActions({
@@ -110,7 +113,7 @@ export function NewTagPage({ tagId }: { tagId?: string }) {
 
   const [name, setName] = useState(existingTag?.name ?? '');
   const [kind, setKind] = useState<TransactionType>(existingTag?.kind ?? TransactionType.Expense);
-  const [color, setColor] = useState<string>(existingTag?.color ?? TagColorSwatches[0]);
+  const [color, setColor] = useState<string>(existingTag?.color ?? DefaultTagColor);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [replacementTagId, setReplacementTagId] = useState<string | null>(null);
 
@@ -171,8 +174,12 @@ export function NewTagPage({ tagId }: { tagId?: string }) {
   }
 
   function handlePressDelete() {
+    if (tagId === undefined) {
+      return;
+    }
+
     if (usingTransactions.length === 0) {
-      confirmDestructiveAction('Apagar tag', `Apagar "${name}"? Essa ação não pode ser desfeita.`, 'Apagar', () => void deleteWithoutReassignment());
+      router.push(`/categories/${tagId}/delete`);
       return;
     }
 
@@ -184,19 +191,6 @@ export function NewTagPage({ tagId }: { tagId?: string }) {
     // Reveals the replacement picker below instead of a dialog -- there can be several
     // candidates, more than a native Alert's buttons comfortably fit.
     setReplacementTagId(replacementCandidates[0].id);
-  }
-
-  async function deleteWithoutReassignment() {
-    if (tagId === undefined) {
-      return;
-    }
-
-    try {
-      await deleteTag.mutateAsync(tagId);
-      router.back();
-    } catch {
-      setErrorMessage('Não foi possível apagar. Tente novamente.');
-    }
   }
 
   async function handleConfirmDeleteWithReplacement() {
@@ -262,13 +256,22 @@ export function NewTagPage({ tagId }: { tagId?: string }) {
           </View>
         </View>
 
-        <View className="gap-[14px] px-6 pt-[26px]">
+        <View className="gap-3 px-6 pt-[26px]">
           <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 1.8 }} className="text-[10px] uppercase text-ct-muted">
-            cor nos gráficos
+            cor nos gráficos · {TotalTagColorCount} opções
           </Text>
-          <View className="flex-row flex-wrap gap-[10px]">
-            {TagColorSwatches.map((swatch) => (
-              <ColorSwatch key={swatch} color={swatch} isSelected={swatch === color} onPress={() => setColor(swatch)} />
+          <View className="gap-[10px]">
+            {TagColorGroups.map((group) => (
+              <View key={group.label} className="gap-[6px]">
+                <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 1.2 }} className="text-[9.5px] uppercase text-ct-muted">
+                  {group.label}
+                </Text>
+                <View className="flex-row gap-[6px]">
+                  {group.colors.map((swatch) => (
+                    <ColorSwatch key={swatch} color={swatch} isSelected={swatch === color} onPress={() => setColor(swatch)} />
+                  ))}
+                </View>
+              </View>
             ))}
           </View>
         </View>

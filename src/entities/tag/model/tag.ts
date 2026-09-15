@@ -8,6 +8,8 @@ export type TagDto = { id: string; name: string; color: string; kind: Transactio
 export type UpsertTagRequest = { name: string; color: string; kind: TransactionType };
 
 const TagsQueryKey = ['tags'] as const;
+const DashboardQueryKeyPrefix = ['dashboard'] as const;
+const BudgetsQueryKey = ['budgets'] as const;
 
 export function useTags() {
   return useQuery({ queryKey: TagsQueryKey, queryFn: () => getJson<TagDto[]>('/tags') });
@@ -42,7 +44,11 @@ export function useDeleteTag() {
   return useMutation({
     mutationFn: (tagId: string) => deleteRequest(`/tags/${tagId}`),
     onSuccess: () => {
+      // Deleting a tag also deletes every budget set for it (server-side cascade) -- both caches
+      // need to drop the now-gone data, not just the tag list itself.
       queryClient.invalidateQueries({ queryKey: TagsQueryKey });
+      queryClient.invalidateQueries({ queryKey: DashboardQueryKeyPrefix });
+      queryClient.invalidateQueries({ queryKey: BudgetsQueryKey });
     },
   });
 }
