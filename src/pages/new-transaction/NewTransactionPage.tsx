@@ -1,5 +1,5 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useState, type ReactNode } from 'react';
+import { useCallback, useRef, useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -71,15 +71,23 @@ export function NewTransactionPage() {
   const [isRecurring, setIsRecurring] = useState(params.recurring === 'true');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // The tab keeps this screen mounted between visits. Returning from the date picker also
-  // refocuses this screen, so a blanket reset here would wipe out everything the user already
-  // typed -- apply the picked date only, in that case. Otherwise this is a genuinely fresh visit
-  // (dashboard button, tab press, "+ nova" from recorrentes), so reset to a blank form.
+  // The tab keeps this screen mounted between visits, so a blanket reset on every focus would
+  // wipe out everything the user already typed when they return from the date picker --
+  // including when they cancel out of it without picking a date, which leaves no trace in the
+  // mailbox. This ref is set right before navigating to the picker and read (and cleared) on the
+  // next focus, so "coming back from the picker" is its own signal, independent of whether a
+  // date was actually picked. Otherwise this is a genuinely fresh visit (dashboard button, tab
+  // press, "+ nova" from recorrentes), so reset to a blank form.
+  const cameFromDatePickerRef = useRef(false);
+
   useFocusEffect(
     useCallback(() => {
-      const pickedDate = takePendingPickedDate();
-      if (pickedDate !== null) {
-        setDateIso(pickedDate);
+      if (cameFromDatePickerRef.current) {
+        cameFromDatePickerRef.current = false;
+        const pickedDate = takePendingPickedDate();
+        if (pickedDate !== null) {
+          setDateIso(pickedDate);
+        }
         return;
       }
 
@@ -100,7 +108,7 @@ export function NewTransactionPage() {
 
   let recurringLabel: string;
   if (isRecurring) {
-    recurringLabel = 'sim';
+    recurringLabel = 'sim *';
   } else {
     recurringLabel = 'não';
   }
@@ -123,6 +131,7 @@ export function NewTransactionPage() {
   }
 
   function handlePressDateField() {
+    cameFromDatePickerRef.current = true;
     router.push({ pathname: '/pick-date', params: { initial: dateIso } });
   }
 
@@ -256,6 +265,14 @@ export function NewTransactionPage() {
             </Pressable>
           </View>
         </View>
+
+        {isRecurring && (
+          <View className="px-6 pt-[10px]">
+            <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 0.4 }} className="text-[10px] text-ct-muted">
+              * gera lançamentos até 1 ano à frente
+            </Text>
+          </View>
+        )}
 
         {errorMessage !== null && (
           <View className="px-6 pt-6">
