@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useRouter, type Href } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -12,6 +12,13 @@ import { formatMonthShort } from '@/shared/lib/date';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 
 import { computeTransactionStats, initialOf } from './model/perfil-view';
+
+// Expo Router's generated Href union doesn't always include a folder's own bare parent path
+// (e.g. "/categories" for categories/index.tsx) once it has other static/dynamic children --
+// asserted here since the bare path is the one that resolves correctly at runtime (an explicit
+// "/categories/index" segment matches the sibling [id] route instead, with id "index").
+const CategoriesListRoute = '/categories' as Href;
+const RecurringListRoute = '/recurring' as Href;
 
 // Wide enough to capture "all transactions ever" for a personal-scale account without a
 // dedicated backend count endpoint -- the API has no unbounded "no date filter" affordance
@@ -98,12 +105,12 @@ export function PerfilPage() {
         <ProfileRow
           label="Categorias"
           meta={tags.data !== undefined ? `${tags.data.length} tags` : '···'}
-          onPress={() => router.push('/categories')}
+          onPress={() => router.push(CategoriesListRoute)}
         />
         <ProfileRow
           label="Recorrentes"
           meta={activeRecurringCount !== undefined ? `${activeRecurringCount} ativas` : '···'}
-          onPress={() => router.push('/recurring')}
+          onPress={() => router.push(RecurringListRoute)}
         />
         <ProfileRow label="Orçamentos" meta={currentMonthLabel} />
         <ProfileRow label="Moeda" meta="BRL" />
