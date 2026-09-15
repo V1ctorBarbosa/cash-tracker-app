@@ -1,26 +1,58 @@
-import { buildCategoryBars, buildMonthBars, buildPaymentMethodSegments } from './dashboard-view';
+import { buildCategoryDonut, buildMonthBars, buildPaymentMethodSegments } from './dashboard-view';
 
 // getPaymentMethodLabel (used by buildPaymentMethodSegments) lives in a module that also
 // exports TanStack Query hooks importing the Firebase client -- mocked so this pure logic can
 // be tested without pulling in AsyncStorage's native module.
 jest.mock('@/shared/api/firebase', () => ({ auth: {} }));
 
-describe('buildCategoryBars', () => {
-  test('sorts by amount descending and scales width relative to the largest category', () => {
-    const bars = buildCategoryBars([
+describe('buildCategoryDonut', () => {
+  test('sorts segments by amount descending and formats the total', () => {
+    const donut = buildCategoryDonut([
       { tagId: 'tag-mercado', tagName: 'Mercado', amount: 89.9 },
       { tagId: 'tag-moradia', tagName: 'Moradia', amount: 1800 },
       { tagId: 'tag-lazer', tagName: 'Lazer', amount: 45 },
     ]);
 
-    expect(bars.map((bar) => bar.tagId)).toEqual(['tag-moradia', 'tag-mercado', 'tag-lazer']);
-    expect(bars[0].widthPct).toBe(100);
-    expect(bars[1].widthPct).toBeCloseTo((89.9 / 1800) * 100);
-    expect(bars[0].value).toBe('1.800,00');
+    expect(donut.segments.map((segment) => segment.tagId)).toEqual(['tag-moradia', 'tag-mercado', 'tag-lazer']);
+    expect(donut.totalLabel).toBe('1.934,90');
   });
 
-  test('returns an empty list, with no division by zero, when there is no spend', () => {
-    expect(buildCategoryBars([])).toEqual([]);
+  test('scales each segment as a share of the total, rounded to a whole-number percentage label', () => {
+    const donut = buildCategoryDonut([
+      { tagId: 'tag-moradia', tagName: 'Moradia', amount: 750 },
+      { tagId: 'tag-mercado', tagName: 'Mercado', amount: 250 },
+    ]);
+
+    expect(donut.segments[0].lengthFraction).toBeCloseTo(0.75);
+    expect(donut.segments[0].percentageLabel).toBe('75%');
+    expect(donut.segments[1].lengthFraction).toBeCloseTo(0.25);
+    expect(donut.segments[1].percentageLabel).toBe('25%');
+  });
+
+  test('stacks each segment right after the previous one, so offsets cover the full circle with no gaps', () => {
+    const donut = buildCategoryDonut([
+      { tagId: 'tag-moradia', tagName: 'Moradia', amount: 60 },
+      { tagId: 'tag-mercado', tagName: 'Mercado', amount: 40 },
+    ]);
+
+    expect(donut.segments[0].offsetFraction).toBe(0);
+    expect(donut.segments[1].offsetFraction).toBeCloseTo(0.6);
+  });
+
+  test('assigns a distinct color per segment by position', () => {
+    const donut = buildCategoryDonut([
+      { tagId: 'tag-moradia', tagName: 'Moradia', amount: 10 },
+      { tagId: 'tag-mercado', tagName: 'Mercado', amount: 5 },
+    ]);
+
+    expect(donut.segments[0].color).not.toBe(donut.segments[1].color);
+  });
+
+  test('returns no segments and a zero total, with no division by zero, when there is no spend', () => {
+    const donut = buildCategoryDonut([]);
+
+    expect(donut.segments).toEqual([]);
+    expect(donut.totalLabel).toBe('0,00');
   });
 });
 

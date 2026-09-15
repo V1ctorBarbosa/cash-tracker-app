@@ -7,22 +7,50 @@ import { formatAmount } from '@/shared/lib/format';
 // Kept as plain numbers (0-100), not "45%" strings -- React Native's DimensionValue type only
 // accepts a `${number}%` template literal, which a value built from a pre-formatted string
 // field can't statically satisfy. Callers format the "%" suffix inline at the style/text site.
-export type CategoryBar = { tagId: string; name: string; value: string; widthPct: number };
+const PercentMultiplier = 100;
 
-/** Each bar's width is relative to the largest category, not the total -- the biggest spend fills the row. */
-export function buildCategoryBars(spendByTag: TagAmountDto[]): CategoryBar[] {
-  const maxAmount = Math.max(0, ...spendByTag.map((tag) => tag.amount));
+/**
+ * One wedge of the "gasto por categoria" donut, described as fractions (0-1) of the full circle
+ * rather than pixel/angle values -- keeps this pure and testable, independent of whatever radius
+ * the component renders the donut at.
+ */
+export type CategoryDonutSegment = {
+  tagId: string;
+  name: string;
+  percentageLabel: string;
+  color: string;
+  lengthFraction: number;
+  offsetFraction: number;
+};
 
-  return [...spendByTag].sort((a, b) => b.amount - a.amount).map((tag) => buildCategoryBar(tag, maxAmount));
-}
+export type CategoryDonut = { totalLabel: string; segments: CategoryDonutSegment[] };
 
-function buildCategoryBar(tag: TagAmountDto, maxAmount: number): CategoryBar {
-  let widthPct = 0;
-  if (maxAmount !== 0) {
-    widthPct = (tag.amount / maxAmount) * 100;
+/** Segments ordered largest-first, each carrying where it starts along the circle so the component can stack them without repeating that math. */
+export function buildCategoryDonut(spendByTag: TagAmountDto[]): CategoryDonut {
+  const total = spendByTag.reduce((sum, tag) => sum + tag.amount, 0);
+  const sortedByAmountDescending = [...spendByTag].sort((a, b) => b.amount - a.amount);
+
+  const segments: CategoryDonutSegment[] = [];
+  let cumulativeFraction = 0;
+  for (const [index, tag] of sortedByAmountDescending.entries()) {
+    let lengthFraction = 0;
+    if (total !== 0) {
+      lengthFraction = tag.amount / total;
+    }
+
+    segments.push({
+      tagId: tag.tagId,
+      name: tag.tagName,
+      percentageLabel: `${Math.round(lengthFraction * PercentMultiplier)}%`,
+      color: categoricalColorAt(index),
+      lengthFraction,
+      offsetFraction: cumulativeFraction,
+    });
+
+    cumulativeFraction += lengthFraction;
   }
 
-  return { tagId: tag.tagId, name: tag.tagName, value: formatAmount(tag.amount), widthPct };
+  return { totalLabel: formatAmount(total), segments };
 }
 
 export type PaymentMethodSegment = { paymentMethod: string; label: string; value: string; widthPct: number; color: string };

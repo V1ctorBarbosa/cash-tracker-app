@@ -1,19 +1,30 @@
 import { useRouter } from 'expo-router';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Circle, Svg } from 'react-native-svg';
 
 import { useDashboard } from '@/entities/dashboard';
 import { TransactionType } from '@/entities/transaction';
-import { FontFamily } from '@/constants/theme';
+import { Colors, FontFamily } from '@/constants/theme';
 import { getMonthDateRange, getTrailingMonthsRange, formatMonthLong } from '@/shared/lib/date';
 import { formatAmount, formatCurrency } from '@/shared/lib/format';
-import { useSelectedMonth } from '@/shared/lib/use-selected-month';
+import { useSelectedMonth } from '@/shared/lib/selected-month-context';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { PageLoader } from '@/shared/ui/PageLoader';
 
-import { buildCategoryBars, buildMonthBars, buildPaymentMethodSegments } from './model/dashboard-view';
+import { buildCategoryDonut, buildMonthBars, buildPaymentMethodSegments, type CategoryDonut } from './model/dashboard-view';
 
 const TrailingMonthsCount = 6;
+const DonutDiameter = 132;
+const DonutStrokeWidth = 27;
+const DonutRadius = (DonutDiameter - DonutStrokeWidth) / 2;
+const DonutCenter = DonutDiameter / 2;
+const DonutCircumference = 2 * Math.PI * DonutRadius;
+// Plain SVG transform syntax, not the `rotation`/`origin` convenience props -- react-native-svg's
+// web shim mishandles those together on a Circle, emitting an invalid `transform-origin` DOM
+// attribute (https://github.com/software-mansion/react-native-svg, WebShape.js). `transform`
+// itself is a real SVG attribute and works consistently on both web and native.
+const DonutStartRotationTransform = `rotate(-90, ${DonutCenter}, ${DonutCenter})`;
 
 function SectionLabel({ children }: { children: string }) {
   return (
@@ -22,6 +33,54 @@ function SectionLabel({ children }: { children: string }) {
       className="border-b border-ct-ink pb-2 text-[11px] uppercase text-ct-ink">
       {children}
     </Text>
+  );
+}
+
+function CategoryDonutChart({ donut }: { donut: CategoryDonut }) {
+  return (
+    <View className="flex-row items-center gap-5">
+      <View style={{ width: DonutDiameter, height: DonutDiameter }}>
+        <Svg width={DonutDiameter} height={DonutDiameter}>
+          <Circle cx={DonutCenter} cy={DonutCenter} r={DonutRadius} stroke={Colors.light.track} strokeWidth={DonutStrokeWidth} fill="none" />
+          {donut.segments.map((segment) => {
+            const segmentLength = segment.lengthFraction * DonutCircumference;
+            return (
+              <Circle
+                key={segment.tagId}
+                cx={DonutCenter}
+                cy={DonutCenter}
+                r={DonutRadius}
+                stroke={segment.color}
+                strokeWidth={DonutStrokeWidth}
+                strokeDasharray={`${segmentLength}, ${DonutCircumference - segmentLength}`}
+                strokeDashoffset={-segment.offsetFraction * DonutCircumference}
+                fill="none"
+                transform={DonutStartRotationTransform}
+              />
+            );
+          })}
+        </Svg>
+        <View style={StyleSheet.absoluteFill} className="items-center justify-center">
+          <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 1 }} className="text-[9px] uppercase text-ct-muted">
+            total
+          </Text>
+          <Text className="text-sm font-semibold text-ct-ink">{donut.totalLabel}</Text>
+        </View>
+      </View>
+      <View className="flex-1 gap-2">
+        {donut.segments.map((segment) => (
+          <View key={segment.tagId} className="flex-row items-center gap-2">
+            <View className="h-[9px] w-[9px] rounded-full" style={{ backgroundColor: segment.color }} />
+            <Text className="flex-1 text-[13px] text-ct-ink" numberOfLines={1}>
+              {segment.name}
+            </Text>
+            <Text style={{ fontFamily: FontFamily.mono }} className="text-[11px] text-ct-muted">
+              {segment.percentageLabel}
+            </Text>
+          </View>
+        ))}
+      </View>
+    </View>
   );
 }
 
@@ -52,7 +111,7 @@ export function DashboardPage() {
   }
 
   const dashboard = monthDashboard.data;
-  const categoryBars = buildCategoryBars(dashboard.spendByTag);
+  const categoryDonut = buildCategoryDonut(dashboard.spendByTag);
   const paymentMethodSegments = buildPaymentMethodSegments(dashboard.spendByPaymentMethod);
   const monthBars = buildMonthBars(trailingDashboard.data.monthlySummary);
 
@@ -112,22 +171,8 @@ export function DashboardPage() {
 
         <View className="gap-[14px] px-6 pt-7">
           <SectionLabel>gasto por categoria</SectionLabel>
-          {categoryBars.length === 0 && <Text className="text-sm text-ct-muted">Nenhuma despesa neste mês.</Text>}
-          <View className="gap-3">
-            {categoryBars.map((bar) => (
-              <View key={bar.tagId} className="flex-row items-center gap-3">
-                <Text className="w-[92px] text-[13px] font-medium text-ct-ink" numberOfLines={1}>
-                  {bar.name}
-                </Text>
-                <View className="h-4 flex-1 bg-ct-track">
-                  <View className="h-4 bg-ct-accent" style={{ width: `${bar.widthPct}%` }} />
-                </View>
-                <Text style={{ fontFamily: FontFamily.mono }} className="w-[74px] text-right text-xs text-ct-ink">
-                  {bar.value}
-                </Text>
-              </View>
-            ))}
-          </View>
+          {categoryDonut.segments.length === 0 && <Text className="text-sm text-ct-muted">Nenhuma despesa neste mês.</Text>}
+          {categoryDonut.segments.length > 0 && <CategoryDonutChart donut={categoryDonut} />}
         </View>
 
         <View className="gap-[14px] px-6 pt-7">
