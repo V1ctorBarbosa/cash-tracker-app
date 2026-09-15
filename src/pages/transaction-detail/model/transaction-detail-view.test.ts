@@ -1,6 +1,6 @@
 import { formatDateTimeBR } from '@/shared/lib/date';
 
-import { buildDetailRows, typeLabel } from './transaction-detail-view';
+import { buildDetailRows, buildHeadline, typeLabel } from './transaction-detail-view';
 
 // getPaymentMethodLabel (used by buildDetailRows) lives in a module that also exports TanStack
 // Query hooks importing the Firebase client -- mocked so this pure logic can be tested without
@@ -45,6 +45,20 @@ describe('buildDetailRows', () => {
     const rows = buildDetailRows({ ...BaseTransaction, tagId: 'tag-deleted' }, Tags);
 
     expect(rows.find((row) => row.label === 'categoria')?.value).toBe('tag-deleted');
+  });
+});
+
+describe('buildHeadline', () => {
+  test('uses the description when the transaction has one', () => {
+    expect(buildHeadline(BaseTransaction, Tags)).toBe('Supermercado');
+  });
+
+  test('falls back to the tag name when there is no description', () => {
+    expect(buildHeadline({ ...BaseTransaction, description: null }, Tags)).toBe('Mercado');
+  });
+
+  test('falls back to the raw tag id when there is no description and the tag no longer exists', () => {
+    expect(buildHeadline({ ...BaseTransaction, description: null, tagId: 'tag-deleted' }, Tags)).toBe('tag-deleted');
   });
 });
 

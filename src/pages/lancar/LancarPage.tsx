@@ -8,6 +8,7 @@ import { useTags } from '@/entities/tag';
 import { getPaymentMethodLabel, PaymentMethod, TransactionType, useCreateTransaction } from '@/entities/transaction';
 import { Colors, FontFamily } from '@/constants/theme';
 import { maskCurrencyInput, parseAmountInput } from '@/shared/lib/format';
+import { normalizeOptionalText } from '@/shared/lib/text';
 import { Chip } from '@/shared/ui/Chip';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 
@@ -60,10 +61,6 @@ export function LancarPage() {
       setErrorMessage('Informe um valor válido.');
       return;
     }
-    if (description.trim().length === 0) {
-      setErrorMessage('Informe uma descrição.');
-      return;
-    }
     if (tagId === null) {
       setErrorMessage('Escolha uma categoria.');
       return;
@@ -73,13 +70,15 @@ export function LancarPage() {
       return;
     }
 
+    const normalizedDescription = normalizeOptionalText(description);
+
     try {
       if (isRecurring) {
         const dayOfMonth = Number(parsedDate.split('-')[2]);
         await createRecurringTransaction.mutateAsync({
           type,
           amount: parsedAmount,
-          description,
+          description: normalizedDescription,
           tagId,
           paymentMethod,
           dayOfMonth,
@@ -87,7 +86,14 @@ export function LancarPage() {
           endDate: null,
         });
       } else {
-        await createTransaction.mutateAsync({ type, amount: parsedAmount, date: parsedDate, description, tagId, paymentMethod });
+        await createTransaction.mutateAsync({
+          type,
+          amount: parsedAmount,
+          date: parsedDate,
+          description: normalizedDescription,
+          tagId,
+          paymentMethod,
+        });
       }
 
       router.back();
@@ -146,7 +152,7 @@ export function LancarPage() {
         </View>
 
         <View className="gap-[10px] px-6 pt-6">
-          <FieldLabel>descrição</FieldLabel>
+          <FieldLabel>descrição (opcional)</FieldLabel>
           <TextInput
             value={description}
             onChangeText={setDescription}

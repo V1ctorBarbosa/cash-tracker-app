@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDeleteRecurringTransaction, useRecurringTransactions, useUpdateRecurringTransaction } from '@/entities/recurring-transaction';
 import { Colors, FontFamily } from '@/constants/theme';
 import { formatAmount, maskCurrencyInput, parseAmountInput } from '@/shared/lib/format';
+import { normalizeOptionalText } from '@/shared/lib/text';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 
 import { buildDayPills, formatMonthYearInput, parseMonthYearInput } from './model/editar-recorrencia-view';
@@ -65,10 +66,6 @@ export function EditarRecorrenciaPage({ recurringTransactionId }: { recurringTra
       setErrorMessage('Informe um valor válido.');
       return;
     }
-    if (description.trim().length === 0) {
-      setErrorMessage('Informe uma descrição.');
-      return;
-    }
     if (selectedDay === 0) {
       setErrorMessage('Escolha o dia do mês.');
       return;
@@ -88,7 +85,7 @@ export function EditarRecorrenciaPage({ recurringTransactionId }: { recurringTra
         request: {
           type: existing.type,
           amount: parsedAmount,
-          description,
+          description: normalizeOptionalText(description),
           tagId: existing.tagId,
           paymentMethod: existing.paymentMethod,
           dayOfMonth: selectedDay,
@@ -108,7 +105,14 @@ export function EditarRecorrenciaPage({ recurringTransactionId }: { recurringTra
       return;
     }
 
-    Alert.alert('Apagar definição', `Apagar a recorrência "${existing.description}"? O histórico já gerado é mantido.`, [
+    let recurringLabel: string;
+    if (existing.description !== null) {
+      recurringLabel = `a recorrência "${existing.description}"`;
+    } else {
+      recurringLabel = 'esta recorrência';
+    }
+
+    Alert.alert('Apagar definição', `Apagar ${recurringLabel}? O histórico já gerado é mantido.`, [
       { text: 'Cancelar', style: 'cancel' },
       { text: 'Apagar', style: 'destructive', onPress: () => void confirmDelete() },
     ]);
@@ -155,7 +159,7 @@ export function EditarRecorrenciaPage({ recurringTransactionId }: { recurringTra
 
         <View className="gap-[10px] px-6 pt-[22px]">
           <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 1.8 }} className="text-[10px] uppercase text-ct-muted">
-            descrição
+            descrição (opcional)
           </Text>
           <TextInput
             value={description}

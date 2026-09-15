@@ -8,7 +8,7 @@ import { FontFamily } from '@/constants/theme';
 import { formatCurrency } from '@/shared/lib/format';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 
-import { buildDetailRows, typeLabel } from './model/transaction-detail-view';
+import { buildDetailRows, buildHeadline, typeLabel } from './model/transaction-detail-view';
 
 export function TransactionDetailPage({ transactionId }: { transactionId: string }) {
   const router = useRouter();
@@ -43,6 +43,7 @@ export function TransactionDetailPage({ transactionId }: { transactionId: string
   }
 
   const detailRows = buildDetailRows(transaction.data, tags.data);
+  const headline = buildHeadline(transaction.data, tags.data);
 
   return (
     <SafeAreaView className="flex-1 bg-ct-ink">
@@ -59,7 +60,7 @@ export function TransactionDetailPage({ transactionId }: { transactionId: string
         <Text style={{ fontFamily: FontFamily.bodyExtraBold }} className="text-[54px] leading-[52px] tracking-tight text-ct-card">
           {formatCurrency(transaction.data.amount)}
         </Text>
-        <Text className="mt-2 text-xl font-medium text-[#dcdad1]">{transaction.data.description}</Text>
+        <Text className="mt-2 text-xl font-medium text-[#dcdad1]">{headline}</Text>
       </View>
 
       <View className="flex-row gap-5 px-6 pt-[26px]">

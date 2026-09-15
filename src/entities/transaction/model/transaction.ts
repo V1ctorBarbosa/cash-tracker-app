@@ -35,7 +35,7 @@ export type TransactionDto = {
   type: TransactionType;
   amount: number;
   date: string;
-  description: string;
+  description: string | null;
   tagId: string;
   paymentMethod: PaymentMethod;
   recurringTransactionId: string | null;
@@ -46,7 +46,7 @@ export type CreateTransactionRequest = {
   type: TransactionType;
   amount: number;
   date: string;
-  description: string;
+  description: string | null;
   tagId: string;
   paymentMethod: PaymentMethod;
 };

@@ -42,7 +42,7 @@ export function HistoricoPage() {
     );
   }
 
-  const filteredTransactions = filterTransactions(transactions.data, searchText, filter);
+  const filteredTransactions = filterTransactions(transactions.data, tags.data, searchText, filter);
   const groups = groupByMonth(filteredTransactions, tags.data);
 
   return (

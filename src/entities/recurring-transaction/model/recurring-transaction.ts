@@ -7,7 +7,7 @@ export type RecurringTransactionDto = {
   id: string;
   type: TransactionType;
   amount: number;
-  description: string;
+  description: string | null;
   tagId: string;
   paymentMethod: PaymentMethod;
   dayOfMonth: number;
@@ -19,7 +19,7 @@ export type RecurringTransactionDto = {
 export type CreateRecurringTransactionRequest = {
   type: TransactionType;
   amount: number;
-  description: string;
+  description: string | null;
   tagId: string;
   paymentMethod: PaymentMethod;
   dayOfMonth: number;

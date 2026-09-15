@@ -26,11 +26,11 @@ export type HistoryItem = {
 
 export type HistoryGroup = { month: string; total: string; items: HistoryItem[] };
 
-export function filterTransactions(transactions: TransactionDto[], searchText: string, filter: HistoryFilter): TransactionDto[] {
+export function filterTransactions(transactions: TransactionDto[], tags: TagDto[], searchText: string, filter: HistoryFilter): TransactionDto[] {
   const normalizedSearch = searchText.trim().toLowerCase();
 
   return transactions.filter((transaction) => {
-    if (normalizedSearch.length > 0 && !transaction.description.toLowerCase().includes(normalizedSearch)) {
+    if (normalizedSearch.length > 0 && !resolveDescription(transaction, tags).toLowerCase().includes(normalizedSearch)) {
       return false;
     }
     if (filter === HistoryFilter.Expenses && transaction.type !== TransactionType.Expense) {
@@ -82,11 +82,20 @@ function buildHistoryItem(transaction: TransactionDto, tags: TagDto[]): HistoryI
     id: transaction.id,
     day: transaction.date.slice(8, 10),
     dot: isIncome ? Colors.light.accent : '#b9b3a1',
-    desc: transaction.description,
+    desc: transaction.description ?? tagName,
     tag: tagName,
     method: getPaymentMethodLabel(transaction.paymentMethod),
     rec: transaction.recurringTransactionId !== null ? 'recorrente' : '',
     amount: `${isIncome ? '+' : '−'} ${formatAmount(transaction.amount)}`,
     amountColor: isIncome ? Colors.light.accent : Colors.light.ink,
   };
+}
+
+/** The description shown for a transaction -- falls back to the tag name when it has none. */
+function resolveDescription(transaction: TransactionDto, tags: TagDto[]): string {
+  if (transaction.description !== null) {
+    return transaction.description;
+  }
+
+  return tags.find((tag) => tag.id === transaction.tagId)?.name ?? transaction.tagId;
 }

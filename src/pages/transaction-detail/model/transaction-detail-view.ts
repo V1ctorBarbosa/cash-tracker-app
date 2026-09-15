@@ -23,3 +23,12 @@ export function buildDetailRows(transaction: TransactionDto, tags: TagDto[]): De
 export function typeLabel(type: TransactionDto['type']): string {
   return type === TransactionType.Income ? 'receita' : 'despesa';
 }
+
+/** The headline shown under the amount -- falls back to the tag name when the transaction has no description. */
+export function buildHeadline(transaction: TransactionDto, tags: TagDto[]): string {
+  if (transaction.description !== null) {
+    return transaction.description;
+  }
+
+  return tags.find((tag) => tag.id === transaction.tagId)?.name ?? transaction.tagId;
+}

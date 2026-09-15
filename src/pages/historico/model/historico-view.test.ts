@@ -29,7 +29,15 @@ describe('filterTransactions', () => {
   test('matches the description case-insensitively when a search text is given', () => {
     const transactions = [createTransaction({ description: 'Supermercado' }), createTransaction({ description: 'Aluguel' })];
 
-    const result = filterTransactions(transactions, 'super', HistoryFilter.All);
+    const result = filterTransactions(transactions, Tags, 'super', HistoryFilter.All);
+
+    expect(result).toEqual([transactions[0]]);
+  });
+
+  test('matches the tag name when a transaction has no description', () => {
+    const transactions = [createTransaction({ description: null }), createTransaction({ description: 'Aluguel' })];
+
+    const result = filterTransactions(transactions, Tags, 'mercado', HistoryFilter.All);
 
     expect(result).toEqual([transactions[0]]);
   });
@@ -37,7 +45,7 @@ describe('filterTransactions', () => {
   test('keeps only expenses when the Expenses filter is active', () => {
     const transactions = [createTransaction({ type: 'Expense' }), createTransaction({ type: 'Income' })];
 
-    const result = filterTransactions(transactions, '', HistoryFilter.Expenses);
+    const result = filterTransactions(transactions, Tags, '', HistoryFilter.Expenses);
 
     expect(result).toEqual([transactions[0]]);
   });
@@ -45,7 +53,7 @@ describe('filterTransactions', () => {
   test('keeps only income when the Income filter is active', () => {
     const transactions = [createTransaction({ type: 'Expense' }), createTransaction({ type: 'Income' })];
 
-    const result = filterTransactions(transactions, '', HistoryFilter.Income);
+    const result = filterTransactions(transactions, Tags, '', HistoryFilter.Income);
 
     expect(result).toEqual([transactions[1]]);
   });
@@ -53,7 +61,7 @@ describe('filterTransactions', () => {
   test('keeps only transactions linked to a recurring definition when the Recurring filter is active', () => {
     const transactions = [createTransaction({ recurringTransactionId: null }), createTransaction({ recurringTransactionId: 'recurring-1' })];
 
-    const result = filterTransactions(transactions, '', HistoryFilter.Recurring);
+    const result = filterTransactions(transactions, Tags, '', HistoryFilter.Recurring);
 
     expect(result).toEqual([transactions[1]]);
   });
@@ -61,7 +69,7 @@ describe('filterTransactions', () => {
   test('returns every transaction for an empty search and the All filter', () => {
     const transactions = [createTransaction({}), createTransaction({ id: 'transaction-2' })];
 
-    const result = filterTransactions(transactions, '   ', HistoryFilter.All);
+    const result = filterTransactions(transactions, Tags, '   ', HistoryFilter.All);
 
     expect(result).toEqual(transactions);
   });
@@ -117,5 +125,13 @@ describe('groupByMonth', () => {
     const groups = groupByMonth(transactions, Tags);
 
     expect(groups[0].items[0].rec).toBe('recorrente');
+  });
+
+  test('falls back to the tag name for the item description when there is none', () => {
+    const transactions = [createTransaction({ description: null })];
+
+    const groups = groupByMonth(transactions, Tags);
+
+    expect(groups[0].items[0].desc).toBe('Mercado');
   });
 });

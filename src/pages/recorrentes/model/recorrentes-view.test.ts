@@ -72,6 +72,12 @@ describe('buildRecurringRows', () => {
 
     expect(row.tag).toBe('tag-deleted');
   });
+
+  test('falls back to the tag name when there is no description', () => {
+    const [row] = buildRecurringRows([createRecurring({ description: null })], Tags);
+
+    expect(row.name).toBe('Moradia');
+  });
 });
 
 describe('countActiveRecurring', () => {

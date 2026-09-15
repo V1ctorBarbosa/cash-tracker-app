@@ -38,7 +38,7 @@ function buildRecurringRow(recurring: RecurringTransactionDto, tags: TagDto[]): 
 
   return {
     id: recurring.id,
-    name: recurring.description,
+    name: recurring.description ?? tagName,
     meta: buildRecurringMeta(recurring),
     amount: `${isIncome ? '+' : '−'} ${formatAmount(recurring.amount)}`,
     tag: tagName,
