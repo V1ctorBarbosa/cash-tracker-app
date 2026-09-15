@@ -25,8 +25,18 @@ export function categoricalColorAt(index: number): string {
   return CategoricalChartColors[index % CategoricalChartColors.length];
 }
 
-/** The fixed set of colors a user can assign to a tag (nova tag's color picker). */
-export const TagColorSwatches = ['#3f4a35', '#6c7f57', '#8aa07f', '#9fb2bb', '#4a5f6b', '#c9b99a', '#8c4a33', '#b9b3a1'] as const;
+/**
+ * The colors a user can assign to a tag (nova tag's color picker), grouped into six-shade
+ * families matching the design's "cor nos gráficos · 30 opções" section -- dark to light,
+ * left to right, within each group.
+ */
+export const TagColorGroups = [
+  { label: 'verdes de campo', colors: ['#2b3320', '#3f4a35', '#526342', '#6c7f57', '#8aa07f', '#a9c1a0'] },
+  { label: 'céu e sombra', colors: ['#2f4256', '#3d5975', '#5f7c94', '#9fb2bb', '#c7d5d8', '#8791a6'] },
+  { label: 'terra e papel', colors: ['#5a4834', '#7a6449', '#a08a6a', '#c9b99a', '#e0d6bd', '#b1a892'] },
+  { label: 'acentos quentes', colors: ['#5a2a1f', '#8c4a33', '#b56b47', '#d4926a', '#6b6a2e', '#9c9642'] },
+  { label: 'neutros', colors: ['#1a1c18', '#33362e', '#5e6357', '#83887c', '#a8ab9f', '#c8c9bf'] },
+] as const;
 
 /** Font family names as registered with useFonts() in the root layout — match @expo-google-fonts export names exactly. */
 export const FontFamily = {
