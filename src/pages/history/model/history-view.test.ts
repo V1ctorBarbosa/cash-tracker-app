@@ -34,6 +34,14 @@ describe('filterTransactions', () => {
     expect(result).toEqual([transactions[0]]);
   });
 
+  test('matches the description ignoring accents and case', () => {
+    const transactions = [createTransaction({ description: 'Padaria São José' }), createTransaction({ description: 'Aluguel' })];
+
+    const result = filterTransactions(transactions, Tags, 'PADARIA SAO JOSE', HistoryFilter.All);
+
+    expect(result).toEqual([transactions[0]]);
+  });
+
   test('matches the tag name when a transaction has no description', () => {
     const transactions = [createTransaction({ description: null }), createTransaction({ description: 'Aluguel' })];
 

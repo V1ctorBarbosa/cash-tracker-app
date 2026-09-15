@@ -2,6 +2,7 @@ import { Colors } from '@/constants/theme';
 import type { TagDto } from '@/entities/tag';
 import { getPaymentMethodLabel, TransactionType, type TransactionDto } from '@/entities/transaction';
 import { formatAmount } from '@/shared/lib/format';
+import { normalizeSearchText } from '@/shared/lib/text';
 
 export const HistoryFilter = {
   All: 'tudo',
@@ -24,10 +25,10 @@ export type HistoryItem = {
 export type HistorySummary = { total: string; items: HistoryItem[] };
 
 export function filterTransactions(transactions: TransactionDto[], tags: TagDto[], searchText: string, filter: HistoryFilter): TransactionDto[] {
-  const normalizedSearch = searchText.trim().toLowerCase();
+  const normalizedSearch = normalizeSearchText(searchText);
 
   return transactions.filter((transaction) => {
-    if (normalizedSearch.length > 0 && !resolveDescription(transaction, tags).toLowerCase().includes(normalizedSearch)) {
+    if (normalizedSearch.length > 0 && !normalizeSearchText(resolveDescription(transaction, tags)).includes(normalizedSearch)) {
       return false;
     }
     if (filter === HistoryFilter.Expenses && transaction.type !== TransactionType.Expense) {
