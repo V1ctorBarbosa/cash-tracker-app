@@ -2,6 +2,7 @@ import { Redirect } from 'expo-router';
 import { Tabs } from 'expo-router/tabs';
 
 import { useSession } from '@/entities/session';
+import { SelectedMonthProvider } from '@/shared/lib/selected-month-context';
 import { TabBar } from '@/shared/ui/TabBar';
 
 export default function TabsLayout() {
@@ -16,12 +17,14 @@ export default function TabsLayout() {
   }
 
   return (
-    <Tabs tabBar={(props) => <TabBar {...props} />} screenOptions={{ headerShown: false }}>
-      <Tabs.Screen name="index" />
-      <Tabs.Screen name="history" />
-      <Tabs.Screen name="new" />
-      <Tabs.Screen name="budget" />
-      <Tabs.Screen name="profile" />
-    </Tabs>
+    <SelectedMonthProvider>
+      <Tabs tabBar={(props) => <TabBar {...props} />} screenOptions={{ headerShown: false }}>
+        <Tabs.Screen name="index" />
+        <Tabs.Screen name="history" />
+        <Tabs.Screen name="new" />
+        <Tabs.Screen name="budget" />
+        <Tabs.Screen name="profile" />
+      </Tabs>
+    </SelectedMonthProvider>
   );
 }

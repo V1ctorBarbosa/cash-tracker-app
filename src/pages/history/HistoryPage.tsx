@@ -7,7 +7,7 @@ import { useTags } from '@/entities/tag';
 import { useTransactions } from '@/entities/transaction';
 import { Colors, FontFamily } from '@/constants/theme';
 import { formatMonthLong, getMonthDateRange } from '@/shared/lib/date';
-import { useSelectedMonth } from '@/shared/lib/use-selected-month';
+import { useSelectedMonth } from '@/shared/lib/selected-month-context';
 import { Chip } from '@/shared/ui/Chip';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { PageLoader } from '@/shared/ui/PageLoader';
@@ -25,7 +25,7 @@ export function HistoryPage() {
   const router = useRouter();
   const { year, month, goToPreviousMonth, goToNextMonth } = useSelectedMonth();
   const range = getMonthDateRange(year, month);
-  const transactions = useTransactions(range.from, range.to);
+  const transactions = useTransactions({ from: range.from, to: range.to });
   const tags = useTags();
 
   const [searchText, setSearchText] = useState('');

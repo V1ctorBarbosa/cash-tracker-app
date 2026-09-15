@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDashboard } from '@/entities/dashboard';
 import { FontFamily } from '@/constants/theme';
 import { getMonthDateRange, formatMonthShort } from '@/shared/lib/date';
-import { useSelectedMonth } from '@/shared/lib/use-selected-month';
+import { useSelectedMonth } from '@/shared/lib/selected-month-context';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { PageLoader } from '@/shared/ui/PageLoader';
 
