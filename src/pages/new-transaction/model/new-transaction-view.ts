@@ -1,27 +1,6 @@
-/** "10/09/2026" -> "2026-09-10", or null when the input isn't a valid calendar date. */
-export function parseDateInput(rawDate: string): string | null {
-  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(rawDate.trim());
-  if (match === null) {
-    return null;
-  }
-
-  const [, day, month, year] = match;
-  const isoDate = `${year}-${month}-${day}`;
-  const parsed = new Date(`${isoDate}T00:00:00`);
-  const isRealCalendarDate =
-    parsed.getFullYear() === Number(year) && parsed.getMonth() + 1 === Number(month) && parsed.getDate() === Number(day);
-
-  if (!isRealCalendarDate) {
-    return null;
-  }
-
-  return isoDate;
-}
-
-/** Today's date as "DD/MM/AAAA", matching the field's display format. */
-export function todayAsBRDate(): string {
-  const today = new Date();
-  const day = today.getDate().toString().padStart(2, '0');
-  const month = (today.getMonth() + 1).toString().padStart(2, '0');
-  return `${day}/${month}/${today.getFullYear()}`;
-}
+// This model has no functions left: the free-text date field it used to support (parseDateInput,
+// todayAsBRDate) was replaced by the pick-date calendar screen, which always returns an
+// already-valid ISO date -- no parsing needed. Left in place, excluded from tsc/jest via
+// tsconfig.json/package.json, only because this sandbox has no working file-delete tool; delete
+// this file and its .test.ts sibling outright once one is available.
+export {};

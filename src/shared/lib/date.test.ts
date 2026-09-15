@@ -6,6 +6,7 @@ import {
   getMonthDateRange,
   getTrailingMonthsRange,
   toIsoDate,
+  todayAsIsoDate,
   toYearMonth,
 } from './date';
 
@@ -44,6 +45,12 @@ describe('toIsoDate', () => {
 describe('toYearMonth', () => {
   test('pads the month to two digits', () => {
     expect(toYearMonth(2026, 9)).toBe('2026-09');
+  });
+});
+
+describe('todayAsIsoDate', () => {
+  test('formats as yyyy-MM-dd', () => {
+    expect(todayAsIsoDate()).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 });
 

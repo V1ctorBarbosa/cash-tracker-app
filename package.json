@@ -62,6 +62,10 @@
   },
   "private": true,
   "jest": {
-    "preset": "jest-expo"
+    "preset": "jest-expo",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "src/pages/new-transaction/model/new-transaction-view.test.ts"
+    ]
   }
 }

@@ -1,24 +1,4 @@
-import { parseDateInput, todayAsBRDate } from './new-transaction-view';
-
-describe('parseDateInput', () => {
-  test('parses a DD/MM/AAAA date into ISO format', () => {
-    expect(parseDateInput('10/09/2026')).toBe('2026-09-10');
-  });
-
-  test.each(['2026-09-10', '10-09-2026', '32/01/2026', '29/02/2026', 'not a date'])(
-    'returns null for an invalid or malformed input %p',
-    (input) => {
-      expect(parseDateInput(input)).toBeNull();
-    },
-  );
-
-  test('accepts February 29 in a leap year', () => {
-    expect(parseDateInput('29/02/2028')).toBe('2028-02-29');
-  });
-});
-
-describe('todayAsBRDate', () => {
-  test('formats as DD/MM/AAAA', () => {
-    expect(todayAsBRDate()).toMatch(/^\d{2}\/\d{2}\/\d{4}$/);
-  });
-});
+// Dead alongside new-transaction-view.ts -- see the comment there. Excluded from jest via
+// package.json's testPathIgnorePatterns since an empty test file fails ("must contain at least
+// one test"); delete both files outright once a working file-delete tool is available.
+export {};

@@ -1,18 +1,19 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useCreateRecurringTransaction } from '@/entities/recurring-transaction';
 import { useTags } from '@/entities/tag';
 import { getPaymentMethodLabel, PaymentMethod, TransactionType, useCreateTransaction } from '@/entities/transaction';
-import { Colors, FontFamily } from '@/constants/theme';
+import { Colors, FontFamily, LoaderSize } from '@/constants/theme';
+import { formatDateBR, todayAsIsoDate } from '@/shared/lib/date';
+import { takePendingPickedDate } from '@/shared/lib/date-picker-result';
 import { maskCurrencyInput, parseAmountInput } from '@/shared/lib/format';
 import { normalizeOptionalText } from '@/shared/lib/text';
 import { Chip } from '@/shared/ui/Chip';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
-
-import { parseDateInput, todayAsBRDate } from './model/new-transaction-view';
+import { Loader } from '@/shared/ui/Loader';
 
 const PaymentMethodOptions = Object.values(PaymentMethod);
 
@@ -66,21 +67,28 @@ export function NewTransactionPage() {
   const [description, setDescription] = useState('');
   const [tagId, setTagId] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.Pix);
-  const [dateInput, setDateInput] = useState(todayAsBRDate());
+  const [dateIso, setDateIso] = useState(todayAsIsoDate());
   const [isRecurring, setIsRecurring] = useState(params.recurring === 'true');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // The tab keeps this screen mounted between visits, so local state would otherwise carry the
-  // previous entry over -- reset to a blank form every time the screen is focused, not just on
-  // first mount.
+  // The tab keeps this screen mounted between visits. Returning from the date picker also
+  // refocuses this screen, so a blanket reset here would wipe out everything the user already
+  // typed -- apply the picked date only, in that case. Otherwise this is a genuinely fresh visit
+  // (dashboard button, tab press, "+ nova" from recorrentes), so reset to a blank form.
   useFocusEffect(
     useCallback(() => {
+      const pickedDate = takePendingPickedDate();
+      if (pickedDate !== null) {
+        setDateIso(pickedDate);
+        return;
+      }
+
       setType(resolveInitialType(params.type));
       setAmount('');
       setDescription('');
       setTagId(null);
       setPaymentMethod(PaymentMethod.Pix);
-      setDateInput(todayAsBRDate());
+      setDateIso(todayAsIsoDate());
       setIsRecurring(params.recurring === 'true');
       setErrorMessage(null);
     }, [params.type, params.recurring]),
@@ -97,16 +105,31 @@ export function NewTransactionPage() {
     recurringLabel = 'não';
   }
 
+  let saveButtonContent: ReactNode;
+  if (isSaving) {
+    saveButtonContent = (
+      <View className="flex-row items-center gap-[14px]">
+        <Loader size={LoaderSize.medium} color={Colors.light.card} />
+        <Text className="text-[15px] font-semibold text-ct-card">salvando lançamento</Text>
+      </View>
+    );
+  } else {
+    saveButtonContent = <Text className="text-[15px] font-semibold text-ct-card">salvar lançamento</Text>;
+  }
+
   function handleChangeType(nextType: TransactionType) {
     setType(nextType);
     setTagId(null);
+  }
+
+  function handlePressDateField() {
+    router.push({ pathname: '/pick-date', params: { initial: dateIso } });
   }
 
   async function handlePressSave() {
     setErrorMessage(null);
 
     const parsedAmount = parseAmountInput(amount);
-    const parsedDate = parseDateInput(dateInput);
 
     if (parsedAmount === null) {
       setErrorMessage('Informe um valor válido.');
@@ -116,16 +139,12 @@ export function NewTransactionPage() {
       setErrorMessage('Escolha uma categoria.');
       return;
     }
-    if (parsedDate === null) {
-      setErrorMessage('Informe uma data válida (DD/MM/AAAA).');
-      return;
-    }
 
     const normalizedDescription = normalizeOptionalText(description);
 
     try {
       if (isRecurring) {
-        const dayOfMonth = Number(parsedDate.split('-')[2]);
+        const dayOfMonth = Number(dateIso.split('-')[2]);
         await createRecurringTransaction.mutateAsync({
           type,
           amount: parsedAmount,
@@ -133,14 +152,14 @@ export function NewTransactionPage() {
           tagId,
           paymentMethod,
           dayOfMonth,
-          startDate: parsedDate,
+          startDate: dateIso,
           endDate: null,
         });
       } else {
         await createTransaction.mutateAsync({
           type,
           amount: parsedAmount,
-          date: parsedDate,
+          date: dateIso,
           description: normalizedDescription,
           tagId,
           paymentMethod,
@@ -226,14 +245,9 @@ export function NewTransactionPage() {
         <View className="flex-row gap-[18px] px-6 pt-6">
           <View className="flex-1 gap-1">
             <FieldLabel>data</FieldLabel>
-            <TextInput
-              value={dateInput}
-              onChangeText={setDateInput}
-              placeholder="DD/MM/AAAA"
-              placeholderTextColor={Colors.light.muted}
-              keyboardType="numbers-and-punctuation"
-              className="border-b border-ct-divider pb-[10px] pt-[6px] text-base text-ct-ink"
-            />
+            <Pressable onPress={handlePressDateField} className="border-b border-ct-divider pb-[10px] pt-[6px]">
+              <Text className="text-base text-ct-ink">{formatDateBR(dateIso)}</Text>
+            </Pressable>
           </View>
           <View className="flex-1 gap-1">
             <FieldLabel>repetir todo mês</FieldLabel>
@@ -251,7 +265,7 @@ export function NewTransactionPage() {
 
         <View className="px-6 pb-6 pt-7">
           <Pressable onPress={handlePressSave} disabled={isSaving} className="items-center bg-ct-accent py-[17px] disabled:opacity-60">
-            <Text className="text-[15px] font-semibold text-ct-card">salvar lançamento</Text>
+            {saveButtonContent}
           </Pressable>
         </View>
       </ScrollView>

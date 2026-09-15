@@ -51,6 +51,12 @@ export function toYearMonth(year: number, month: number): string {
   return `${year.toString().padStart(4, '0')}-${month.toString().padStart(2, '0')}`;
 }
 
+/** Today's date as "yyyy-MM-dd", in the device's local timezone. */
+export function todayAsIsoDate(): string {
+  const today = new Date();
+  return toIsoDate(today.getFullYear(), today.getMonth() + 1, today.getDate());
+}
+
 /** "2026-09-10" -> "10/09/2026" */
 export function formatDateBR(isoDate: string): string {
   const [year, month, day] = isoDate.split('-');
