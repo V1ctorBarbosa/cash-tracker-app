@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* The design signals focus with the field's own underline/border, not a browser focus ring. */
+@layer base {
+  input:focus,
+  textarea:focus {
+    outline: none;
+  }
+}
