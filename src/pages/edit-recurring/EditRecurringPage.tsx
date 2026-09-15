@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
@@ -10,6 +10,7 @@ import {
   type RecurringTransactionDto,
 } from '@/entities/recurring-transaction';
 import { Colors, FontFamily } from '@/constants/theme';
+import { confirmDestructiveAction } from '@/shared/lib/confirm';
 import { formatAmount, maskCurrencyInput, parseAmountInput } from '@/shared/lib/format';
 import { normalizeOptionalText } from '@/shared/lib/text';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
@@ -175,10 +176,7 @@ export function EditRecurringPage({ recurringTransactionId }: { recurringTransac
       recurringLabel = 'esta recorrência';
     }
 
-    Alert.alert('Apagar definição', `Apagar ${recurringLabel}? O histórico já gerado é mantido.`, [
-      { text: 'Cancelar', style: 'cancel' },
-      { text: 'Apagar', style: 'destructive', onPress: () => void confirmDelete() },
-    ]);
+    confirmDestructiveAction('Apagar definição', `Apagar ${recurringLabel}? O histórico já gerado é mantido.`, 'Apagar', () => void confirmDelete());
   }
 
   async function confirmDelete() {
@@ -279,6 +277,12 @@ export function EditRecurringPage({ recurringTransactionId }: { recurringTransac
         <View className="flex-row items-center justify-between px-6 pt-6">
           <Text className="text-[15px] font-medium text-ct-ink">Recorrência ativa</Text>
           <ActiveToggle active={active} onPress={() => setActive((current) => !current)} />
+        </View>
+
+        <View className="px-6 pt-[10px]">
+          <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 0.4 }} className="text-[10px] text-ct-muted">
+            * gera lançamentos até 1 ano à frente
+          </Text>
         </View>
 
         {errorMessage !== null && (

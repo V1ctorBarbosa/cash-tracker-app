@@ -1,9 +1,9 @@
 import { useRouter } from 'expo-router';
-import { Alert, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTags } from '@/entities/tag';
-import { useDeleteTransaction, useTransaction } from '@/entities/transaction';
+import { useTransaction } from '@/entities/transaction';
 import { Colors, FontFamily, LoaderSize } from '@/constants/theme';
 import { formatCurrency } from '@/shared/lib/format';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
@@ -15,20 +15,13 @@ export function TransactionDetailPage({ transactionId }: { transactionId: string
   const router = useRouter();
   const transaction = useTransaction(transactionId);
   const tags = useTags();
-  const deleteTransaction = useDeleteTransaction();
+
+  function handlePressEdit() {
+    router.push(`/transaction/${transactionId}/edit`);
+  }
 
   function handlePressDelete() {
-    Alert.alert('Excluir lançamento', 'Essa ação não pode ser desfeita.', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Excluir',
-        style: 'destructive',
-        onPress: async () => {
-          await deleteTransaction.mutateAsync(transactionId);
-          router.back();
-        },
-      },
-    ]);
+    router.push(`/transaction/${transactionId}/delete`);
   }
 
   if (transaction.isPending || tags.isPending) {
@@ -41,8 +34,13 @@ export function TransactionDetailPage({ transactionId }: { transactionId: string
 
   if (transaction.isError || tags.isError) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-ct-ink px-6">
-        <ErrorMessage message="Não foi possível carregar esse lançamento" />
+      <SafeAreaView className="flex-1 bg-ct-ink px-6">
+        <Pressable onPress={() => router.back()} hitSlop={12} className="pt-[26px]">
+          <Text className="text-[15px] text-[#a8a99f]">‹ voltar</Text>
+        </Pressable>
+        <View className="flex-1 items-center justify-center">
+          <ErrorMessage message="Não foi possível carregar esse lançamento" />
+        </View>
       </SafeAreaView>
     );
   }
@@ -83,10 +81,7 @@ export function TransactionDetailPage({ transactionId }: { transactionId: string
       </View>
 
       <View className="mt-auto gap-3 px-6 pb-6 pt-7">
-        {/* Edit reuses the new-transaction form's fields but pre-filled + a PUT instead of a POST --
-            not wired yet, so this stays inert rather than opening a form that silently creates
-            a duplicate instead of editing. */}
-        <Pressable className="items-center bg-ct-card py-4">
+        <Pressable onPress={handlePressEdit} className="items-center bg-ct-card py-4">
           <Text className="text-[15px] font-semibold text-ct-ink">editar</Text>
         </Pressable>
         <Pressable onPress={handlePressDelete} className="items-center border border-[#6b6d64] py-[15px]">
