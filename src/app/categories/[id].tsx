@@ -1,9 +1,9 @@
 import { useLocalSearchParams } from 'expo-router';
 
-import { NovaTagPage } from '@/pages/nova-tag/NovaTagPage';
+import { NewTagPage } from '@/pages/new-tag/NewTagPage';
 
 export default function EditTagRoute() {
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  return <NovaTagPage key={id} tagId={id} />;
+  return <NewTagPage key={id} tagId={id} />;
 }

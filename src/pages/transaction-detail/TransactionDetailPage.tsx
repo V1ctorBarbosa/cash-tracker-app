@@ -16,7 +16,7 @@ export function TransactionDetailPage({ transactionId }: { transactionId: string
   const tags = useTags();
   const deleteTransaction = useDeleteTransaction();
 
-  function handlePressExcluir() {
+  function handlePressDelete() {
     Alert.alert('Excluir lançamento', 'Essa ação não pode ser desfeita.', [
       { text: 'Cancelar', style: 'cancel' },
       {
@@ -78,13 +78,13 @@ export function TransactionDetailPage({ transactionId }: { transactionId: string
       </View>
 
       <View className="mt-auto gap-3 px-6 pb-6 pt-7">
-        {/* Edit reuses the "lançar" form's fields but pre-filled + a PUT instead of a POST --
+        {/* Edit reuses the new-transaction form's fields but pre-filled + a PUT instead of a POST --
             not wired yet, so this stays inert rather than opening a form that silently creates
             a duplicate instead of editing. */}
         <Pressable className="items-center bg-ct-card py-4">
           <Text className="text-[15px] font-semibold text-ct-ink">editar</Text>
         </Pressable>
-        <Pressable onPress={handlePressExcluir} className="items-center border border-[#6b6d64] py-[15px]">
+        <Pressable onPress={handlePressDelete} className="items-center border border-[#6b6d64] py-[15px]">
           <Text className="text-[15px] font-semibold text-[#dcdad1]">excluir</Text>
         </Pressable>
       </View>

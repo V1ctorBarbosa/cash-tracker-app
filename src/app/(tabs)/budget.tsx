@@ -1,5 +1,5 @@
-import { OrcamentoPage } from '@/pages/orcamento/OrcamentoPage';
+import { BudgetPage } from '@/pages/budget/BudgetPage';
 
 export default function BudgetRoute() {
-  return <OrcamentoPage />;
+  return <BudgetPage />;
 }

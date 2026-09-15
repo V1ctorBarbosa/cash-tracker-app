@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { signInWithGoogle } from '@/features/auth';
 import { Colors, FontFamily } from '@/constants/theme';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
+
+const GenericSignInErrorMessage = 'Não foi possível entrar. Tente novamente.';
 
 export function SignInPage() {
   const [isSigningIn, setIsSigningIn] = useState(false);
@@ -17,10 +19,21 @@ export function SignInPage() {
     try {
       await signInWithGoogle();
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Não foi possível entrar. Tente novamente.');
+      if (error instanceof Error) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage(GenericSignInErrorMessage);
+      }
     } finally {
       setIsSigningIn(false);
     }
+  }
+
+  let signInButtonContent: ReactNode;
+  if (isSigningIn) {
+    signInButtonContent = <ActivityIndicator color={Colors.light.card} />;
+  } else {
+    signInButtonContent = <Text className="text-[15px] font-semibold text-ct-card">Entrar com Google</Text>;
   }
 
   return (
@@ -43,11 +56,7 @@ export function SignInPage() {
 
       <View className="gap-[14px]">
         <Pressable onPress={handlePressSignIn} disabled={isSigningIn} className="items-center bg-ct-ink py-[17px] disabled:opacity-60">
-          {isSigningIn ? (
-            <ActivityIndicator color={Colors.light.card} />
-          ) : (
-            <Text className="text-[15px] font-semibold text-ct-card">Entrar com Google</Text>
-          )}
+          {signInButtonContent}
         </Pressable>
         <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 0.8 }} className="text-center text-[10.5px] text-ct-muted">
           seus dados ficam na sua conta

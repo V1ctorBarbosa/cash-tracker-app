@@ -9,11 +9,27 @@ import { Platform } from 'react-native';
 
 import { firebaseConfig } from '@/shared/config/firebase-config';
 
-const firebaseApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+const firebaseApp = resolveFirebaseApp();
 
-export const auth: Auth = Platform.OS === 'web' ? getAuth(firebaseApp) : createNativeAuth();
+export const auth: Auth = resolveAuth(firebaseApp);
 
-function createNativeAuth(): Auth {
+function resolveFirebaseApp() {
+  if (getApps().length > 0) {
+    return getApp();
+  }
+
+  return initializeApp(firebaseConfig);
+}
+
+function resolveAuth(firebaseApp: ReturnType<typeof resolveFirebaseApp>): Auth {
+  if (Platform.OS === 'web') {
+    return getAuth(firebaseApp);
+  }
+
+  return createNativeAuth(firebaseApp);
+}
+
+function createNativeAuth(firebaseApp: ReturnType<typeof resolveFirebaseApp>): Auth {
   try {
     return initializeAuth(firebaseApp, { persistence: getReactNativePersistence(AsyncStorage) });
   } catch {

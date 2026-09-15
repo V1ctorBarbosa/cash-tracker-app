@@ -15,7 +15,12 @@ export function formatCurrency(value: number): string {
 export function parseAmountInput(rawAmount: string): number | null {
   const normalized = rawAmount.trim().replace(/\./g, '').replace(',', '.');
   const value = Number(normalized);
-  return Number.isFinite(value) && value > 0 ? value : null;
+
+  if (!Number.isFinite(value) || value <= 0) {
+    return null;
+  }
+
+  return value;
 }
 
 /**

@@ -1,5 +1,5 @@
-import { HistoricoPage } from '@/pages/historico/HistoricoPage';
+import { HistoryPage } from '@/pages/history/HistoryPage';
 
 export default function HistoryRoute() {
-  return <HistoricoPage />;
+  return <HistoryPage />;
 }

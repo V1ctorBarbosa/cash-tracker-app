@@ -1,9 +1,9 @@
 import { useLocalSearchParams } from 'expo-router';
 
-import { EditarRecorrenciaPage } from '@/pages/editar-recorrencia/EditarRecorrenciaPage';
+import { EditRecurringPage } from '@/pages/edit-recurring/EditRecurringPage';
 
 export default function EditRecurringRoute() {
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  return <EditarRecorrenciaPage key={id} recurringTransactionId={id} />;
+  return <EditRecurringPage key={id} recurringTransactionId={id} />;
 }

@@ -13,14 +13,16 @@ export type CategoryBar = { tagId: string; name: string; value: string; widthPct
 export function buildCategoryBars(spendByTag: TagAmountDto[]): CategoryBar[] {
   const maxAmount = Math.max(0, ...spendByTag.map((tag) => tag.amount));
 
-  return [...spendByTag]
-    .sort((a, b) => b.amount - a.amount)
-    .map((tag) => ({
-      tagId: tag.tagId,
-      name: tag.tagName,
-      value: formatAmount(tag.amount),
-      widthPct: maxAmount === 0 ? 0 : (tag.amount / maxAmount) * 100,
-    }));
+  return [...spendByTag].sort((a, b) => b.amount - a.amount).map((tag) => buildCategoryBar(tag, maxAmount));
+}
+
+function buildCategoryBar(tag: TagAmountDto, maxAmount: number): CategoryBar {
+  let widthPct = 0;
+  if (maxAmount !== 0) {
+    widthPct = (tag.amount / maxAmount) * 100;
+  }
+
+  return { tagId: tag.tagId, name: tag.tagName, value: formatAmount(tag.amount), widthPct };
 }
 
 export type PaymentMethodSegment = { paymentMethod: string; label: string; value: string; widthPct: number; color: string };
@@ -31,13 +33,22 @@ export function buildPaymentMethodSegments(spendByPaymentMethod: PaymentMethodAm
 
   return [...spendByPaymentMethod]
     .sort((a, b) => b.amount - a.amount)
-    .map((entry, index) => ({
-      paymentMethod: entry.paymentMethod,
-      label: getPaymentMethodLabel(entry.paymentMethod),
-      value: formatAmount(entry.amount),
-      widthPct: total === 0 ? 0 : (entry.amount / total) * 100,
-      color: categoricalColorAt(index),
-    }));
+    .map((entry, index) => buildPaymentMethodSegment(entry, total, index));
+}
+
+function buildPaymentMethodSegment(entry: PaymentMethodAmountDto, total: number, colorIndex: number): PaymentMethodSegment {
+  let widthPct = 0;
+  if (total !== 0) {
+    widthPct = (entry.amount / total) * 100;
+  }
+
+  return {
+    paymentMethod: entry.paymentMethod,
+    label: getPaymentMethodLabel(entry.paymentMethod),
+    value: formatAmount(entry.amount),
+    widthPct,
+    color: categoricalColorAt(colorIndex),
+  };
 }
 
 export type MonthBar = { month: string; label: string; incomeHeightPct: number; expenseHeightPct: number };

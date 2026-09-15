@@ -1,5 +1,5 @@
-import { CategoriasPage } from '@/pages/categorias/CategoriasPage';
+import { CategoriesPage } from '@/pages/categories/CategoriesPage';
 
 export default function CategoriesRoute() {
-  return <CategoriasPage />;
+  return <CategoriesPage />;
 }

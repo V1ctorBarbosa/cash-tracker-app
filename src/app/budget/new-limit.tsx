@@ -1,12 +1,20 @@
 import { useLocalSearchParams } from 'expo-router';
 
-import { NovoLimitePage } from '@/pages/novo-limite/NovoLimitePage';
+import { NewLimitPage } from '@/pages/new-limit/NewLimitPage';
 
 export default function NewLimitRoute() {
   const today = new Date();
   const params = useLocalSearchParams<{ year?: string; month?: string }>();
-  const initialYear = params.year !== undefined ? Number(params.year) : today.getFullYear();
-  const initialMonth = params.month !== undefined ? Number(params.month) : today.getMonth() + 1;
 
-  return <NovoLimitePage initialYear={initialYear} initialMonth={initialMonth} />;
+  let initialYear = today.getFullYear();
+  if (params.year !== undefined) {
+    initialYear = Number(params.year);
+  }
+
+  let initialMonth = today.getMonth() + 1;
+  if (params.month !== undefined) {
+    initialMonth = Number(params.month);
+  }
+
+  return <NewLimitPage initialYear={initialYear} initialMonth={initialMonth} />;
 }

@@ -1,5 +1,5 @@
-import { NovaTagPage } from '@/pages/nova-tag/NovaTagPage';
+import { NewTagPage } from '@/pages/new-tag/NewTagPage';
 
 export default function NewTagRoute() {
-  return <NovaTagPage />;
+  return <NewTagPage />;
 }

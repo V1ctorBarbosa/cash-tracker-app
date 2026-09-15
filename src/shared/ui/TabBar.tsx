@@ -12,6 +12,23 @@ const TabLabels: Record<string, string> = {
   profile: 'perfil',
 };
 
+function TabBarItem({ label, isFocused, onPress }: { label: string; isFocused: boolean; onPress: () => void }) {
+  let color: string;
+  if (isFocused) {
+    color = Colors.light.ink;
+  } else {
+    color = Colors.light.navInactive;
+  }
+
+  return (
+    <Pressable onPress={onPress} className="flex-1 items-center">
+      <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 0.45, color }} className="text-[9px] uppercase">
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
 /**
  * A flat row of mono uppercase labels with no icons, matching the design exactly -- the default
  * React Navigation tab bar always reserves icon space and adds its own chrome, so this replaces
@@ -35,15 +52,7 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
           }
         }
 
-        return (
-          <Pressable key={route.key} onPress={handlePress} className="flex-1 items-center">
-            <Text
-              style={{ fontFamily: FontFamily.mono, letterSpacing: 0.45, color: isFocused ? Colors.light.ink : Colors.light.navInactive }}
-              className="text-[9px] uppercase">
-              {label}
-            </Text>
-          </Pressable>
-        );
+        return <TabBarItem key={route.key} label={label} isFocused={isFocused} onPress={handlePress} />;
       })}
     </View>
   );

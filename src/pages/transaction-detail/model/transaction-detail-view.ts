@@ -8,7 +8,13 @@ export type DetailRow = { label: string; value: string };
 
 export function buildDetailRows(transaction: TransactionDto, tags: TagDto[]): DetailRow[] {
   const tagName = tags.find((tag) => tag.id === transaction.tagId)?.name ?? transaction.tagId;
-  const recurrenceLabel = transaction.recurringTransactionId === null ? 'lançamento único' : 'transação recorrente';
+
+  let recurrenceLabel: string;
+  if (transaction.recurringTransactionId === null) {
+    recurrenceLabel = 'lançamento único';
+  } else {
+    recurrenceLabel = 'transação recorrente';
+  }
 
   return [
     { label: 'categoria', value: tagName },
@@ -21,7 +27,11 @@ export function buildDetailRows(transaction: TransactionDto, tags: TagDto[]): De
 }
 
 export function typeLabel(type: TransactionDto['type']): string {
-  return type === TransactionType.Income ? 'receita' : 'despesa';
+  if (type === TransactionType.Income) {
+    return 'receita';
+  }
+
+  return 'despesa';
 }
 
 /** The headline shown under the amount -- falls back to the tag name when the transaction has no description. */
