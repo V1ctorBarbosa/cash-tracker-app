@@ -52,12 +52,19 @@ export async function deleteRequest(path: string): Promise<void> {
 }
 
 async function buildAuthHeaders(): Promise<Record<string, string>> {
-  const idToken = await auth.currentUser?.getIdToken();
-  if (idToken === undefined) {
+  const currentUser = auth.currentUser;
+  if (currentUser === null) {
+    console.error('buildAuthHeaders: auth.currentUser is null -- no signed-in user to get a token from.');
     throw new Error('Cannot call the API without a signed-in user.');
   }
 
-  return { Authorization: `Bearer ${idToken}` };
+  try {
+    const idToken = await currentUser.getIdToken();
+    return { Authorization: `Bearer ${idToken}` };
+  } catch (error) {
+    console.error('buildAuthHeaders: getIdToken() failed.', error);
+    throw error;
+  }
 }
 
 async function parseJsonOrThrow<TResponse>(response: Response): Promise<TResponse> {
