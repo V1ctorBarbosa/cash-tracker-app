@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1023825986111",
+    "project_id": "cash-track-83c77",
+    "storage_bucket": "cash-track-83c77.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1023825986111:android:139398936792686baaee8a",
+        "android_client_info": {
+          "package_name": "com.v1ctorbarbosa.cashtracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1023825986111-tj5bvr1qedg6660e6u7n4nbbfkpq8hi7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.v1ctorbarbosa.cashtracker",
+            "certificate_hash": "85bf2a205743846bf26ad80111dc283e18d1bb7a"
+          }
+        },
+        {
+          "client_id": "1023825986111-vibvmcc90g7c9fuqqgs0fmu69nek3ug7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2jR6q3u2aEnEDmY6RIwcDllPDT88dzbg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1023825986111-vibvmcc90g7c9fuqqgs0fmu69nek3ug7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
