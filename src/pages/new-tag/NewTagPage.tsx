@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useCreateTag, useDeleteTag, useTags, useUpdateTag, type TagDto } from '@/entities/tag';
@@ -21,23 +22,32 @@ import { findReplacementCandidates } from './model/new-tag-view';
 
 const TotalTagColorCount = TagColorGroups.reduce((sum, group) => sum + group.colors.length, 0);
 const DefaultTagColor = TagColorGroups[0].colors[1];
+const KindOptionColorTransitionDuration = 200;
 
 function KindOption({ label, isSelected, onPress }: { label: string; isSelected: boolean; onPress: () => void }) {
-  let backgroundColor: string;
-  let textColor: string;
-  if (isSelected) {
-    backgroundColor = Colors.light.ink;
-    textColor = Colors.light.card;
-  } else {
-    backgroundColor = 'transparent';
-    textColor = Colors.light.ink;
-  }
+  const animatedContainerStyle = useAnimatedStyle(() => {
+    let targetBackground: string = Colors.light.ink;
+    if (!isSelected) {
+      targetBackground = 'transparent';
+    }
+
+    return { backgroundColor: withTiming(targetBackground, { duration: KindOptionColorTransitionDuration }) };
+  });
+
+  const animatedTextStyle = useAnimatedStyle(() => {
+    let targetColor: string = Colors.light.card;
+    if (!isSelected) {
+      targetColor = Colors.light.ink;
+    }
+
+    return { color: withTiming(targetColor, { duration: KindOptionColorTransitionDuration }) };
+  });
 
   return (
-    <Pressable onPress={onPress} style={{ backgroundColor }} className="flex-1 items-center border border-ct-ink py-3">
-      <Text style={{ color: textColor }} className="text-[13.5px] font-medium">
-        {label}
-      </Text>
+    <Pressable onPress={onPress}>
+      <Animated.View style={animatedContainerStyle} className="flex-1 items-center border border-ct-ink py-3">
+        <Animated.Text style={[{ fontSize: 13.5, fontWeight: '500' }, animatedTextStyle]}>{label}</Animated.Text>
+      </Animated.View>
     </Pressable>
   );
 }

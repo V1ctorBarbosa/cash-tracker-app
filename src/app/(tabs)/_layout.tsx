@@ -8,6 +8,7 @@ import type { AuthUser } from '@/shared/api/auth-gateway';
 import { SelectedMonthProvider } from '@/shared/lib/selected-month-context';
 import { NewTransactionFab } from '@/shared/ui/NewTransactionFab';
 import { TabBar } from '@/shared/ui/TabBar';
+import { ToastProvider } from '@/shared/ui/toast/ToastProvider';
 
 type SceneStyleInterpolator = NonNullable<BottomTabNavigationOptions['sceneStyleInterpolator']>;
 type TabTransitionSpec = NonNullable<BottomTabNavigationOptions['transitionSpec']>;
@@ -47,18 +48,20 @@ function SignedInTabsLayout({ user }: { user: AuthUser }) {
 
   return (
     <SelectedMonthProvider>
-      <View style={StyleSheet.absoluteFill}>
-        <Tabs
-          tabBar={(props) => <TabBar {...props} />}
-          screenOptions={{ headerShown: false, sceneStyleInterpolator: interpolateTabSlide, transitionSpec: tabSlideTransitionSpec }}>
-          <Tabs.Screen name="index" />
-          <Tabs.Screen name="history" />
-          <Tabs.Screen name="new" />
-          <Tabs.Screen name="budget" />
-          <Tabs.Screen name="profile" />
-        </Tabs>
-        <NewTransactionFab />
-      </View>
+      <ToastProvider>
+        <View style={StyleSheet.absoluteFill}>
+          <Tabs
+            tabBar={(props) => <TabBar {...props} />}
+            screenOptions={{ headerShown: false, sceneStyleInterpolator: interpolateTabSlide, transitionSpec: tabSlideTransitionSpec }}>
+            <Tabs.Screen name="index" />
+            <Tabs.Screen name="history" />
+            <Tabs.Screen name="new" />
+            <Tabs.Screen name="budget" />
+            <Tabs.Screen name="profile" />
+          </Tabs>
+          <NewTransactionFab />
+        </View>
+      </ToastProvider>
     </SelectedMonthProvider>
   );
 }

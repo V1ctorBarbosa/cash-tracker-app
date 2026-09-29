@@ -21,34 +21,20 @@ import { Chip } from '@/shared/ui/Chip';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { Loader } from '@/shared/ui/Loader';
 import { PageLoader } from '@/shared/ui/PageLoader';
+import { SegmentedToggle } from '@/shared/ui/SegmentedToggle';
 
 const PaymentMethodOptions = Object.values(PaymentMethod);
+
+const TypeToggleOptions = [
+  { label: 'despesa', value: TransactionType.Expense },
+  { label: 'receita', value: TransactionType.Income },
+];
 
 function FieldLabel({ children }: { children: string }) {
   return (
     <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 1.8 }} className="text-[10px] uppercase text-ct-muted">
       {children}
     </Text>
-  );
-}
-
-function TypeToggleOption({ label, isSelected, onPress }: { label: string; isSelected: boolean; onPress: () => void }) {
-  let backgroundColor: string;
-  let textColor: string;
-  if (isSelected) {
-    backgroundColor = Colors.light.ink;
-    textColor = Colors.light.card;
-  } else {
-    backgroundColor = 'transparent';
-    textColor = Colors.light.ink;
-  }
-
-  return (
-    <Pressable onPress={onPress} style={{ backgroundColor }} className="flex-1 items-center py-[13px]">
-      <Text style={{ color: textColor }} className="text-sm font-semibold">
-        {label}
-      </Text>
-    </Pressable>
   );
 }
 
@@ -187,10 +173,7 @@ export function EditTransactionPage({ transactionId }: { transactionId: string }
             </Pressable>
           </View>
 
-          <View className="flex-row border border-ct-ink">
-            <TypeToggleOption label="despesa" isSelected={type === TransactionType.Expense} onPress={() => handleChangeType(TransactionType.Expense)} />
-            <TypeToggleOption label="receita" isSelected={type === TransactionType.Income} onPress={() => handleChangeType(TransactionType.Income)} />
-          </View>
+          <SegmentedToggle options={TypeToggleOptions} selectedValue={type} onSelect={handleChangeType} />
         </View>
 
         <View className="gap-1 px-6 pt-[26px]">
