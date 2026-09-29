@@ -51,7 +51,12 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         {/* This design has no dark variant yet, so the app always renders with the light theme. */}
         <ThemeProvider value={DefaultTheme}>
-          <Stack screenOptions={{ headerShown: false }} />
+          <Stack screenOptions={{ headerShown: false }}>
+            {/* Explicit override so Android also slides in from the right, matching iOS's native
+                default and the design's "detail enters from the side" behavior -- native-stack
+                transitions are OS-driven and only take preset names, not a custom timing curve. */}
+            <Stack.Screen name="transaction/[id]" options={{ animation: 'slide_from_right' }} />
+          </Stack>
         </ThemeProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>
