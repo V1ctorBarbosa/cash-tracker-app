@@ -2,9 +2,10 @@ import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import type { LayoutChangeEvent, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Circle, Svg } from 'react-native-svg';
-import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 import { useDashboard } from '@/entities/dashboard';
 import { TransactionType } from '@/entities/transaction';
@@ -49,6 +50,13 @@ const CompactHeaderTransformDuration = 320;
 const PaymentSegmentFillDuration = 900;
 const MonthBarFillDuration = 800;
 const MonthBarStaggerMs = 60;
+const MonthSwipeThresholdPx = 60;
+const MonthSwipeSnapBackDuration = 320;
+// A small horizontal move (px) arms the swipe; a slightly larger vertical move before that yields
+// to the ScrollView instead -- the standard react-native-gesture-handler pattern for a horizontal
+// gesture living inside a vertically scrolling page.
+const MonthSwipeActivationOffsetPx = 10;
+const MonthSwipeFailOffsetPx = 15;
 
 type RevealKey = 'cat' | 'pay' | 'hist' | 'btn';
 const InitialRevealState: Record<RevealKey, boolean> = { cat: false, pay: false, hist: false, btn: false };
@@ -181,6 +189,29 @@ export function DashboardPage() {
   const monthDashboard = useDashboard(monthRange.from, monthRange.to);
   const trailingDashboard = useDashboard(trailingRange.from, trailingRange.to);
 
+  // Covers the whole scrollable page, not just the balance card, so changing month doesn't
+  // depend on landing a swipe on one small block -- only the card itself visually follows the
+  // drag, as the one clear "handle" showing the gesture is doing something.
+  const monthSwipeDragX = useSharedValue(0);
+
+  const monthSwipeGesture = Gesture.Pan()
+    .activeOffsetX([-MonthSwipeActivationOffsetPx, MonthSwipeActivationOffsetPx])
+    .failOffsetY([-MonthSwipeFailOffsetPx, MonthSwipeFailOffsetPx])
+    .onUpdate((event) => {
+      monthSwipeDragX.value = event.translationX;
+    })
+    .onEnd((event) => {
+      if (event.translationX < -MonthSwipeThresholdPx) {
+        runOnJS(goToNextMonth)();
+      } else if (event.translationX > MonthSwipeThresholdPx) {
+        runOnJS(goToPreviousMonth)();
+      }
+
+      monthSwipeDragX.value = withTiming(0, { duration: MonthSwipeSnapBackDuration, easing: StandardEasing });
+    });
+
+  const animatedMonthCardStyle = useAnimatedStyle(() => ({ transform: [{ translateX: monthSwipeDragX.value }] }));
+
   function handlePressNewTransaction(type: TransactionType) {
     router.push({ pathname: '/(tabs)/new', params: { type } });
   }
@@ -266,123 +297,125 @@ export function DashboardPage() {
   return (
     <SafeAreaView className="flex-1 bg-ct-paper">
       <CompactHeader visible={isCompact} monthLabel={formatMonthLong(year, month)} balanceLabel={formatCurrency(dashboard.balance)} />
-      <Animated.ScrollView
-        onLayout={handleScrollViewLayout}
-        onScroll={handleScroll}
-        scrollEventThrottle={32}
-        contentContainerStyle={{ paddingBottom: FloatingNavContentClearance }}
-        showsVerticalScrollIndicator={false}>
-        <View className="gap-[22px] px-6 pb-[18px] pt-[26px]">
-          <View className="flex-row items-baseline justify-between">
-            <Text style={{ fontFamily: FontFamily.displayWordmark }} className="text-[15px] text-ct-ink">
-              cash track
-            </Text>
-            <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 1.8 }} className="text-[11px] uppercase text-ct-muted">
-              brl
-            </Text>
-          </View>
-
-          <View className="flex-row items-center justify-between border-y border-ct-ink py-[10px]">
-            <Pressable onPress={goToPreviousMonth} hitSlop={12}>
-              <Text className="text-lg text-ct-muted">‹</Text>
-            </Pressable>
-            <Text className="text-[15px] font-semibold tracking-wide text-ct-ink">{formatMonthLong(year, month)}</Text>
-            <Pressable onPress={goToNextMonth} hitSlop={12}>
-              <Text className="text-lg text-ct-muted">›</Text>
-            </Pressable>
-          </View>
-        </View>
-
-        <View className="gap-[14px] px-6">
-          <View className="flex-row gap-4">
-            <View className="flex-1 bg-ct-card px-4 py-[14px]">
-              <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 1.8 }} className="text-[10px] uppercase text-ct-muted">
-                receita
+      <GestureDetector gesture={monthSwipeGesture}>
+        <Animated.ScrollView
+          onLayout={handleScrollViewLayout}
+          onScroll={handleScroll}
+          scrollEventThrottle={32}
+          contentContainerStyle={{ paddingBottom: FloatingNavContentClearance }}
+          showsVerticalScrollIndicator={false}>
+          <View className="gap-[22px] px-6 pb-[18px] pt-[26px]">
+            <View className="flex-row items-baseline justify-between">
+              <Text style={{ fontFamily: FontFamily.displayWordmark }} className="text-[15px] text-ct-ink">
+                cash track
               </Text>
-              <Text className="mt-[6px] text-[21px] font-semibold tracking-tight text-ct-ink">
-                {formatAmount(dashboard.totalIncome)}
+              <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 1.8 }} className="text-[11px] uppercase text-ct-muted">
+                brl
               </Text>
             </View>
-            <View className="flex-1 bg-ct-card px-4 py-[14px]">
-              <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 1.8 }} className="text-[10px] uppercase text-ct-muted">
-                despesa
-              </Text>
-              <Text className="mt-[6px] text-[21px] font-semibold tracking-tight text-ct-ink">
-                {formatAmount(dashboard.totalExpense)}
-              </Text>
+
+            <View className="flex-row items-center justify-between border-y border-ct-ink py-[10px]">
+              <Pressable onPress={goToPreviousMonth} hitSlop={12}>
+                <Text className="text-lg text-ct-muted">‹</Text>
+              </Pressable>
+              <Text className="text-[15px] font-semibold tracking-wide text-ct-ink">{formatMonthLong(year, month)}</Text>
+              <Pressable onPress={goToNextMonth} hitSlop={12}>
+                <Text className="text-lg text-ct-muted">›</Text>
+              </Pressable>
             </View>
           </View>
 
-          <View className="bg-ct-accent p-4">
-            <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 1.8 }} className="text-[10px] uppercase text-ct-card opacity-75">
-              saldo do mês
-            </Text>
-            <Text style={{ fontFamily: FontFamily.bodyExtraBold }} className="mt-1 text-[36px] tracking-tight text-ct-card">
-              {formatCurrency(dashboard.balance)}
-            </Text>
-          </View>
-        </View>
+          <Animated.View style={animatedMonthCardStyle} className="gap-[14px] px-6">
+            <View className="flex-row gap-4">
+              <View className="flex-1 bg-ct-card px-4 py-[14px]">
+                <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 1.8 }} className="text-[10px] uppercase text-ct-muted">
+                  receita
+                </Text>
+                <Text className="mt-[6px] text-[21px] font-semibold tracking-tight text-ct-ink">
+                  {formatAmount(dashboard.totalIncome)}
+                </Text>
+              </View>
+              <View className="flex-1 bg-ct-card px-4 py-[14px]">
+                <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 1.8 }} className="text-[10px] uppercase text-ct-muted">
+                  despesa
+                </Text>
+                <Text className="mt-[6px] text-[21px] font-semibold tracking-tight text-ct-ink">
+                  {formatAmount(dashboard.totalExpense)}
+                </Text>
+              </View>
+            </View>
 
-        <View onLayout={handleCategorySectionLayout} className="gap-[14px] px-6 pt-7">
-          <SectionLabel>gasto por categoria</SectionLabel>
-          {categoryDonut.segments.length === 0 && <Text className="text-sm text-ct-muted">Nenhuma despesa neste mês.</Text>}
-          {categoryDonut.segments.length > 0 && (
-            <Reveal revealed={revealed.cat}>
-              <CategoryDonutChart donut={categoryDonut} />
+            <View className="bg-ct-accent p-4">
+              <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 1.8 }} className="text-[10px] uppercase text-ct-card opacity-75">
+                saldo do mês
+              </Text>
+              <Text style={{ fontFamily: FontFamily.bodyExtraBold }} className="mt-1 text-[36px] tracking-tight text-ct-card">
+                {formatCurrency(dashboard.balance)}
+              </Text>
+            </View>
+          </Animated.View>
+
+          <View onLayout={handleCategorySectionLayout} className="gap-[14px] px-6 pt-7">
+            <SectionLabel>gasto por categoria</SectionLabel>
+            {categoryDonut.segments.length === 0 && <Text className="text-sm text-ct-muted">Nenhuma despesa neste mês.</Text>}
+            {categoryDonut.segments.length > 0 && (
+              <Reveal revealed={revealed.cat}>
+                <CategoryDonutChart donut={categoryDonut} />
+              </Reveal>
+            )}
+          </View>
+
+          <View onLayout={handlePaymentSectionLayout} className="gap-[14px] px-6 pt-7">
+            <SectionLabel>forma de pagamento</SectionLabel>
+            {paymentMethodSegments.length > 0 && (
+              <View className="h-10 flex-row overflow-hidden">
+                {paymentMethodSegments.map((segment) => (
+                  <AnimatedPaymentSegment key={segment.paymentMethod} segment={segment} revealed={revealed.pay} />
+                ))}
+              </View>
+            )}
+            <Reveal revealed={revealed.pay}>
+              <View className="flex-row flex-wrap gap-x-4 gap-y-2">
+                {paymentMethodSegments.map((segment) => (
+                  <View key={segment.paymentMethod} className="w-[46%] flex-row items-center gap-2">
+                    <View className="h-[10px] w-[10px]" style={{ backgroundColor: segment.color }} />
+                    <Text className="flex-1 text-xs text-ct-ink" numberOfLines={1}>
+                      {segment.label}
+                    </Text>
+                    <Text style={{ fontFamily: FontFamily.mono }} className="text-[11px] text-ct-muted">
+                      {segment.value}
+                    </Text>
+                  </View>
+                ))}
+              </View>
             </Reveal>
-          )}
-        </View>
-
-        <View onLayout={handlePaymentSectionLayout} className="gap-[14px] px-6 pt-7">
-          <SectionLabel>forma de pagamento</SectionLabel>
-          {paymentMethodSegments.length > 0 && (
-            <View className="h-10 flex-row overflow-hidden">
-              {paymentMethodSegments.map((segment) => (
-                <AnimatedPaymentSegment key={segment.paymentMethod} segment={segment} revealed={revealed.pay} />
-              ))}
-            </View>
-          )}
-          <Reveal revealed={revealed.pay}>
-            <View className="flex-row flex-wrap gap-x-4 gap-y-2">
-              {paymentMethodSegments.map((segment) => (
-                <View key={segment.paymentMethod} className="w-[46%] flex-row items-center gap-2">
-                  <View className="h-[10px] w-[10px]" style={{ backgroundColor: segment.color }} />
-                  <Text className="flex-1 text-xs text-ct-ink" numberOfLines={1}>
-                    {segment.label}
-                  </Text>
-                  <Text style={{ fontFamily: FontFamily.mono }} className="text-[11px] text-ct-muted">
-                    {segment.value}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          </Reveal>
-        </View>
-
-        <View onLayout={handleHistorySectionLayout} className="gap-[14px] px-6 pt-7">
-          <SectionLabel>últimos meses</SectionLabel>
-          <View className="h-[130px] flex-row items-end gap-[14px]">
-            {monthBars.map((bar, index) => (
-              <AnimatedMonthColumn key={bar.month} bar={bar} index={index} revealed={revealed.hist} />
-            ))}
           </View>
-        </View>
 
-        <View onLayout={handleButtonsSectionLayout} className="p-6">
-          <Reveal revealed={revealed.btn}>
-            <View className="flex-row gap-3">
-              <Pressable onPress={() => handlePressNewTransaction(TransactionType.Income)} className="flex-1 items-center bg-ct-ink py-[15px]">
-                <Text className="text-sm font-semibold text-ct-card">+ receita</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => handlePressNewTransaction(TransactionType.Expense)}
-                className="flex-1 items-center border border-ct-ink py-[14px]">
-                <Text className="text-sm font-semibold text-ct-ink">+ despesa</Text>
-              </Pressable>
+          <View onLayout={handleHistorySectionLayout} className="gap-[14px] px-6 pt-7">
+            <SectionLabel>últimos meses</SectionLabel>
+            <View className="h-[130px] flex-row items-end gap-[14px]">
+              {monthBars.map((bar, index) => (
+                <AnimatedMonthColumn key={bar.month} bar={bar} index={index} revealed={revealed.hist} />
+              ))}
             </View>
-          </Reveal>
-        </View>
-      </Animated.ScrollView>
+          </View>
+
+          <View onLayout={handleButtonsSectionLayout} className="p-6">
+            <Reveal revealed={revealed.btn}>
+              <View className="flex-row gap-3">
+                <Pressable onPress={() => handlePressNewTransaction(TransactionType.Income)} className="flex-1 items-center bg-ct-ink py-[15px]">
+                  <Text className="text-sm font-semibold text-ct-card">+ receita</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => handlePressNewTransaction(TransactionType.Expense)}
+                  className="flex-1 items-center border border-ct-ink py-[14px]">
+                  <Text className="text-sm font-semibold text-ct-ink">+ despesa</Text>
+                </Pressable>
+              </View>
+            </Reveal>
+          </View>
+        </Animated.ScrollView>
+      </GestureDetector>
     </SafeAreaView>
   );
 }
