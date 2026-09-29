@@ -1,18 +1,23 @@
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTags } from '@/entities/tag';
 import { useTransactions } from '@/entities/transaction';
 import { Colors, FontFamily } from '@/constants/theme';
-import { formatMonthLong, getMonthDateRange } from '@/shared/lib/date';
+import { formatDateRangeBR, formatMonthLong, getMonthDateRange, normalizeDateRange, todayAsIsoDate } from '@/shared/lib/date';
+import { takePendingPickedDate } from '@/shared/lib/date-picker-result';
 import { useSelectedMonth } from '@/shared/lib/selected-month-context';
 import { Chip } from '@/shared/ui/Chip';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
+import { FloatingNavContentClearance } from '@/shared/ui/NewTransactionFab';
 import { PageLoader } from '@/shared/ui/PageLoader';
 
 import { buildHistorySummary, filterTransactions, HistoryFilter } from './model/history-view';
+
+type DateRange = { from: string; to: string };
+type RangePickerStep = 'from' | 'to' | null;
 
 const FilterOptions: { value: HistoryFilter; label: string }[] = [
   { value: HistoryFilter.All, label: 'tudo' },
@@ -24,12 +29,66 @@ const FilterOptions: { value: HistoryFilter; label: string }[] = [
 export function HistoryPage() {
   const router = useRouter();
   const { year, month, goToPreviousMonth, goToNextMonth } = useSelectedMonth();
-  const range = getMonthDateRange(year, month);
-  const transactions = useTransactions({ from: range.from, to: range.to });
-  const tags = useTags();
 
   const [searchText, setSearchText] = useState('');
   const [filter, setFilter] = useState<HistoryFilter>(HistoryFilter.All);
+  const [customRange, setCustomRange] = useState<DateRange | null>(null);
+  const [pendingRangeFrom, setPendingRangeFrom] = useState<string | null>(null);
+
+  // Picking a custom range takes two trips to the date picker (from, then to) -- this ref tracks
+  // which leg is in flight across those trips, since it must survive the screen losing and
+  // regaining focus without itself triggering a re-render.
+  const rangePickerStepRef = useRef<RangePickerStep>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      const step = rangePickerStepRef.current;
+      if (step === null) {
+        return;
+      }
+
+      const pickedDate = takePendingPickedDate();
+      if (pickedDate === null) {
+        rangePickerStepRef.current = null;
+        return;
+      }
+
+      if (step === 'from') {
+        rangePickerStepRef.current = 'to';
+        setPendingRangeFrom(pickedDate);
+        router.push({ pathname: '/pick-date', params: { initial: pickedDate } });
+        return;
+      }
+
+      rangePickerStepRef.current = null;
+      if (pendingRangeFrom !== null) {
+        setCustomRange(normalizeDateRange(pendingRangeFrom, pickedDate));
+      }
+      setPendingRangeFrom(null);
+    }, [pendingRangeFrom, router]),
+  );
+
+  function handlePressPickCustomRange() {
+    rangePickerStepRef.current = 'from';
+    router.push({ pathname: '/pick-date', params: { initial: todayAsIsoDate() } });
+  }
+
+  function handlePressExitCustomRange() {
+    setCustomRange(null);
+  }
+
+  let range: DateRange;
+  let periodLabel: string;
+  if (customRange !== null) {
+    range = customRange;
+    periodLabel = formatDateRangeBR(customRange);
+  } else {
+    range = getMonthDateRange(year, month);
+    periodLabel = formatMonthLong(year, month);
+  }
+
+  const transactions = useTransactions({ from: range.from, to: range.to });
+  const tags = useTags();
 
   if (transactions.isPending || tags.isPending) {
     return <PageLoader />;
@@ -53,15 +112,41 @@ export function HistoryPage() {
           histórico
         </Text>
 
-        <View className="flex-row items-center justify-between border-y border-ct-ink py-[10px]">
-          <Pressable onPress={goToPreviousMonth} hitSlop={12}>
-            <Text className="text-lg text-ct-muted">‹</Text>
+        {customRange === null && (
+          <View className="flex-row items-center justify-between border-y border-ct-ink py-[10px]">
+            <Pressable onPress={goToPreviousMonth} hitSlop={12}>
+              <Text className="text-lg text-ct-muted">‹</Text>
+            </Pressable>
+            <Text className="text-[15px] font-semibold tracking-wide text-ct-ink">{periodLabel}</Text>
+            <Pressable onPress={goToNextMonth} hitSlop={12}>
+              <Text className="text-lg text-ct-muted">›</Text>
+            </Pressable>
+          </View>
+        )}
+
+        {customRange !== null && (
+          <View className="flex-row items-center justify-between border-y border-ct-ink py-[10px]">
+            <Pressable onPress={handlePressExitCustomRange} hitSlop={12}>
+              <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 0.4 }} className="text-[10px] uppercase text-ct-muted">
+                ✕ período
+              </Text>
+            </Pressable>
+            <Text className="text-[15px] font-semibold tracking-wide text-ct-ink">{periodLabel}</Text>
+            <Pressable onPress={handlePressPickCustomRange} hitSlop={12}>
+              <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 0.4 }} className="text-[10px] uppercase text-ct-muted">
+                editar
+              </Text>
+            </Pressable>
+          </View>
+        )}
+
+        {customRange === null && (
+          <Pressable onPress={handlePressPickCustomRange} hitSlop={8} className="self-start">
+            <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 0.6 }} className="text-[10px] uppercase text-ct-muted">
+              período customizado ›
+            </Text>
           </Pressable>
-          <Text className="text-[15px] font-semibold tracking-wide text-ct-ink">{formatMonthLong(year, month)}</Text>
-          <Pressable onPress={goToNextMonth} hitSlop={12}>
-            <Text className="text-lg text-ct-muted">›</Text>
-          </Pressable>
-        </View>
+        )}
 
         <TextInput
           value={searchText}
@@ -78,14 +163,14 @@ export function HistoryPage() {
         </View>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ paddingBottom: FloatingNavContentClearance }} showsVerticalScrollIndicator={false}>
         {summary.items.length === 0 && (
           <Text className="px-6 py-8 text-center text-sm text-ct-muted">Nenhum lançamento encontrado.</Text>
         )}
         {summary.items.length > 0 && (
           <View className="flex-row items-baseline justify-between border-b border-t border-t-ct-ink border-b-ct-divider bg-ct-group-bg px-6 pb-[10px] pt-[14px]">
             <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 1.8 }} className="text-[10px] uppercase text-ct-ink">
-              {formatMonthLong(year, month)}
+              {periodLabel}
             </Text>
             <Text style={{ fontFamily: FontFamily.mono }} className="text-[10px] text-ct-muted">
               {summary.total}

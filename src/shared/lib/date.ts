@@ -72,3 +72,17 @@ export function formatDateTimeBR(isoDateTime: string): string {
   const minutes = date.getMinutes().toString().padStart(2, '0');
   return `${day}/${month}/${date.getFullYear()} ${hours}:${minutes}`;
 }
+
+/** { from: "2026-09-10", to: "2026-09-20" } -> "10/09/2026 – 20/09/2026" */
+export function formatDateRangeBR(range: { from: string; to: string }): string {
+  return `${formatDateBR(range.from)} – ${formatDateBR(range.to)}`;
+}
+
+/** Swaps from/to if they were picked out of order, so a backwards range still queries correctly. */
+export function normalizeDateRange(from: string, to: string): { from: string; to: string } {
+  if (from <= to) {
+    return { from, to };
+  }
+
+  return { from: to, to: from };
+}

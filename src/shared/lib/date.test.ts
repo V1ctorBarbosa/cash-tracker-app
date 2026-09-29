@@ -1,10 +1,12 @@
 import {
   formatDateBR,
+  formatDateRangeBR,
   formatDateTimeBR,
   formatMonthLong,
   formatMonthShort,
   getMonthDateRange,
   getTrailingMonthsRange,
+  normalizeDateRange,
   toIsoDate,
   todayAsIsoDate,
   toYearMonth,
@@ -64,6 +66,26 @@ describe('formatDateTimeBR', () => {
   test('formats an ISO datetime as DD/MM/AAAA HH:mm', () => {
     const isoDateTime = '2026-09-10T18:32:00';
     expect(formatDateTimeBR(isoDateTime)).toBe('10/09/2026 18:32');
+  });
+});
+
+describe('formatDateRangeBR', () => {
+  test('formats both bounds as DD/MM/AAAA joined by an en dash', () => {
+    expect(formatDateRangeBR({ from: '2026-09-01', to: '2026-09-20' })).toBe('01/09/2026 – 20/09/2026');
+  });
+});
+
+describe('normalizeDateRange', () => {
+  test('keeps the order when from is already before to', () => {
+    expect(normalizeDateRange('2026-09-01', '2026-09-20')).toEqual({ from: '2026-09-01', to: '2026-09-20' });
+  });
+
+  test('swaps the bounds when from is after to', () => {
+    expect(normalizeDateRange('2026-09-20', '2026-09-01')).toEqual({ from: '2026-09-01', to: '2026-09-20' });
+  });
+
+  test('keeps a single-day range unchanged when both bounds are equal', () => {
+    expect(normalizeDateRange('2026-09-10', '2026-09-10')).toEqual({ from: '2026-09-10', to: '2026-09-10' });
   });
 });
 
