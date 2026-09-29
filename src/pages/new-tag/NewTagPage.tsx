@@ -111,6 +111,8 @@ export function NewTagPage({ tagId }: { tagId?: string }) {
     existingTag = tags.data?.find((tag) => tag.id === tagId);
   }
 
+  const isLocked = existingTag?.isSystemDefined === true;
+
   const [name, setName] = useState(existingTag?.name ?? '');
   const [kind, setKind] = useState<TransactionType>(existingTag?.kind ?? TransactionType.Expense);
   const [color, setColor] = useState<string>(existingTag?.color ?? DefaultTagColor);
@@ -153,7 +155,27 @@ export function NewTagPage({ tagId }: { tagId?: string }) {
     previewName = 'Nome da tag';
   }
 
+  function handleSelectKind(nextKind: TransactionType) {
+    if (isLocked) {
+      return;
+    }
+
+    setKind(nextKind);
+  }
+
+  function handleSelectColor(nextColor: string) {
+    if (isLocked) {
+      return;
+    }
+
+    setColor(nextColor);
+  }
+
   async function handlePressSave() {
+    if (isLocked) {
+      return;
+    }
+
     setErrorMessage(null);
 
     if (name.trim().length === 0) {
@@ -239,6 +261,7 @@ export function NewTagPage({ tagId }: { tagId?: string }) {
           <TextInput
             value={name}
             onChangeText={setName}
+            editable={!isLocked}
             placeholder="Transporte"
             placeholderTextColor={Colors.light.divider}
             style={{ fontFamily: FontFamily.bodySemiBold }}
@@ -246,13 +269,21 @@ export function NewTagPage({ tagId }: { tagId?: string }) {
           />
         </View>
 
+        {isLocked && (
+          <View className="px-6 pt-[14px]">
+            <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 0.4 }} className="text-[10.5px] text-ct-muted">
+              tag automática, usada quando nenhuma categoria é escolhida — não pode ser editada nem apagada
+            </Text>
+          </View>
+        )}
+
         <View className="gap-3 px-6 pt-[26px]">
           <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 1.8 }} className="text-[10px] uppercase text-ct-muted">
             usada em
           </Text>
           <View className="flex-row gap-2">
-            <KindOption label="despesa" isSelected={kind === TransactionType.Expense} onPress={() => setKind(TransactionType.Expense)} />
-            <KindOption label="receita" isSelected={kind === TransactionType.Income} onPress={() => setKind(TransactionType.Income)} />
+            <KindOption label="despesa" isSelected={kind === TransactionType.Expense} onPress={() => handleSelectKind(TransactionType.Expense)} />
+            <KindOption label="receita" isSelected={kind === TransactionType.Income} onPress={() => handleSelectKind(TransactionType.Income)} />
           </View>
         </View>
 
@@ -268,7 +299,7 @@ export function NewTagPage({ tagId }: { tagId?: string }) {
                 </Text>
                 <View className="flex-row gap-[6px]">
                   {group.colors.map((swatch) => (
-                    <ColorSwatch key={swatch} color={swatch} isSelected={swatch === color} onPress={() => setColor(swatch)} />
+                    <ColorSwatch key={swatch} color={swatch} isSelected={swatch === color} onPress={() => handleSelectColor(swatch)} />
                   ))}
                 </View>
               </View>
@@ -316,13 +347,15 @@ export function NewTagPage({ tagId }: { tagId?: string }) {
           </View>
         )}
 
-        <SaveAndDeleteActions
-          isEditing={isEditing}
-          isSaving={isSaving}
-          isDeleting={isDeleting}
-          onPressSave={() => void handlePressSave()}
-          onPressDelete={handlePressDelete}
-        />
+        {!isLocked && (
+          <SaveAndDeleteActions
+            isEditing={isEditing}
+            isSaving={isSaving}
+            isDeleting={isDeleting}
+            onPressSave={() => void handlePressSave()}
+            onPressDelete={handlePressDelete}
+          />
+        )}
       </ScrollView>
     </SafeAreaView>
   );

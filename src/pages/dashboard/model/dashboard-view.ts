@@ -32,7 +32,7 @@ export function buildCategoryDonut(spendByTag: TagAmountDto[]): CategoryDonut {
 
   const segments: CategoryDonutSegment[] = [];
   let cumulativeFraction = 0;
-  for (const [index, tag] of sortedByAmountDescending.entries()) {
+  for (const tag of sortedByAmountDescending) {
     let lengthFraction = 0;
     if (total !== 0) {
       lengthFraction = tag.amount / total;
@@ -42,7 +42,7 @@ export function buildCategoryDonut(spendByTag: TagAmountDto[]): CategoryDonut {
       tagId: tag.tagId,
       name: tag.tagName,
       percentageLabel: `${Math.round(lengthFraction * PercentMultiplier)}%`,
-      color: categoricalColorAt(index),
+      color: tag.tagColor,
       lengthFraction,
       offsetFraction: cumulativeFraction,
     });

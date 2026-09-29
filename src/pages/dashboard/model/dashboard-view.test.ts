@@ -8,9 +8,9 @@ jest.mock('@/shared/api/firebase', () => ({ auth: {} }));
 describe('buildCategoryDonut', () => {
   test('sorts segments by amount descending and formats the total', () => {
     const donut = buildCategoryDonut([
-      { tagId: 'tag-mercado', tagName: 'Mercado', amount: 89.9 },
-      { tagId: 'tag-moradia', tagName: 'Moradia', amount: 1800 },
-      { tagId: 'tag-lazer', tagName: 'Lazer', amount: 45 },
+      { tagId: 'tag-mercado', tagName: 'Mercado', tagColor: '#EF4444', amount: 89.9 },
+      { tagId: 'tag-moradia', tagName: 'Moradia', tagColor: '#3B82F6', amount: 1800 },
+      { tagId: 'tag-lazer', tagName: 'Lazer', tagColor: '#10B981', amount: 45 },
     ]);
 
     expect(donut.segments.map((segment) => segment.tagId)).toEqual(['tag-moradia', 'tag-mercado', 'tag-lazer']);
@@ -19,8 +19,8 @@ describe('buildCategoryDonut', () => {
 
   test('scales each segment as a share of the total, rounded to a whole-number percentage label', () => {
     const donut = buildCategoryDonut([
-      { tagId: 'tag-moradia', tagName: 'Moradia', amount: 750 },
-      { tagId: 'tag-mercado', tagName: 'Mercado', amount: 250 },
+      { tagId: 'tag-moradia', tagName: 'Moradia', tagColor: '#3B82F6', amount: 750 },
+      { tagId: 'tag-mercado', tagName: 'Mercado', tagColor: '#EF4444', amount: 250 },
     ]);
 
     expect(donut.segments[0].lengthFraction).toBeCloseTo(0.75);
@@ -31,21 +31,22 @@ describe('buildCategoryDonut', () => {
 
   test('stacks each segment right after the previous one, so offsets cover the full circle with no gaps', () => {
     const donut = buildCategoryDonut([
-      { tagId: 'tag-moradia', tagName: 'Moradia', amount: 60 },
-      { tagId: 'tag-mercado', tagName: 'Mercado', amount: 40 },
+      { tagId: 'tag-moradia', tagName: 'Moradia', tagColor: '#3B82F6', amount: 60 },
+      { tagId: 'tag-mercado', tagName: 'Mercado', tagColor: '#EF4444', amount: 40 },
     ]);
 
     expect(donut.segments[0].offsetFraction).toBe(0);
     expect(donut.segments[1].offsetFraction).toBeCloseTo(0.6);
   });
 
-  test('assigns a distinct color per segment by position', () => {
+  test("colors each segment by the tag's own real color, never by its position in the list", () => {
     const donut = buildCategoryDonut([
-      { tagId: 'tag-moradia', tagName: 'Moradia', amount: 10 },
-      { tagId: 'tag-mercado', tagName: 'Mercado', amount: 5 },
+      { tagId: 'tag-moradia', tagName: 'Moradia', tagColor: '#3B82F6', amount: 10 },
+      { tagId: 'tag-mercado', tagName: 'Mercado', tagColor: '#EF4444', amount: 5 },
     ]);
 
-    expect(donut.segments[0].color).not.toBe(donut.segments[1].color);
+    expect(donut.segments.find((segment) => segment.tagId === 'tag-moradia')?.color).toBe('#3B82F6');
+    expect(donut.segments.find((segment) => segment.tagId === 'tag-mercado')?.color).toBe('#EF4444');
   });
 
   test('returns no segments and a zero total, with no division by zero, when there is no spend', () => {

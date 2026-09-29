@@ -8,7 +8,7 @@ import { buildHistorySummary, filterTransactions, HistoryFilter } from './histor
 // pulling in AsyncStorage's native module.
 jest.mock('@/shared/api/firebase', () => ({ auth: {} }));
 
-const Tags: TagDto[] = [{ id: 'tag-mercado', name: 'Mercado', color: '#3f4a35', kind: 'Expense' }];
+const Tags: TagDto[] = [{ id: 'tag-mercado', name: 'Mercado', color: '#3f4a35', kind: 'Expense', isSystemDefined: false }];
 
 function createTransaction(overrides: Partial<TransactionDto>): TransactionDto {
   return {

@@ -8,8 +8,8 @@ import { buildTagRows } from './categories-view';
 // pure logic can be tested in isolation.
 jest.mock('@/shared/api/firebase', () => ({ auth: {} }));
 
-function createTag(id: string, kind: TagDto['kind']): TagDto {
-  return { id, name: `Tag ${id}`, color: '#3f4a35', kind };
+function createTag(id: string, kind: TagDto['kind'], isSystemDefined = false): TagDto {
+  return { id, name: `Tag ${id}`, color: '#3f4a35', kind, isSystemDefined };
 }
 
 function createTransaction(tagId: string): TransactionDto {
@@ -30,7 +30,15 @@ describe('buildTagRows', () => {
   test('maps each tag to a row with its kind label and singular usage count', () => {
     const rows = buildTagRows([createTag('tag-1', 'Expense')], [createTransaction('tag-1')]);
 
-    expect(rows).toEqual([{ id: 'tag-1', name: 'Tag tag-1', color: '#3f4a35', kindLabel: 'despesa', usesLabel: '1 lançamento' }]);
+    expect(rows).toEqual([
+      { id: 'tag-1', name: 'Tag tag-1', color: '#3f4a35', kindLabel: 'despesa', usesLabel: '1 lançamento', isSystemDefined: false },
+    ]);
+  });
+
+  test('carries whether the tag is the system-defined uncategorized tag', () => {
+    const rows = buildTagRows([createTag('tag-1', 'Expense', true)], []);
+
+    expect(rows[0].isSystemDefined).toBe(true);
   });
 
   test('pluralizes the usage count and labels income tags as receita', () => {

@@ -25,9 +25,9 @@ describe('buildMonthOptions', () => {
 describe('buildExpenseTags', () => {
   test('keeps only expense-kind tags, savings included', () => {
     const tags: TagDto[] = [
-      { id: 'tag-mercado', name: 'Mercado', color: '#000', kind: 'Expense' },
-      { id: 'tag-salario', name: 'Salário', color: '#000', kind: 'Income' },
-      { id: 'tag-poupanca', name: 'Poupança', color: '#000', kind: 'Expense' },
+      { id: 'tag-mercado', name: 'Mercado', color: '#000', kind: 'Expense', isSystemDefined: false },
+      { id: 'tag-salario', name: 'Salário', color: '#000', kind: 'Income', isSystemDefined: false },
+      { id: 'tag-poupanca', name: 'Poupança', color: '#000', kind: 'Expense', isSystemDefined: false },
     ];
 
     const expenseTags = buildExpenseTags(tags);
@@ -38,7 +38,7 @@ describe('buildExpenseTags', () => {
 
 describe('computeTrailingMonthlyAverage', () => {
   test('divides the summed trailing amount by the number of months', () => {
-    const spendByTag: TagAmountDto[] = [{ tagId: 'tag-mercado', tagName: 'Mercado', amount: 649.2 }];
+    const spendByTag: TagAmountDto[] = [{ tagId: 'tag-mercado', tagName: 'Mercado', tagColor: '#3f4a35', amount: 649.2 }];
 
     expect(computeTrailingMonthlyAverage(spendByTag, 'tag-mercado')).toBeCloseTo(216.4);
   });

@@ -3,7 +3,7 @@ import { useCallback, useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useTags } from '@/entities/tag';
+import { findUncategorizedTag, useTags } from '@/entities/tag';
 import {
   getPaymentMethodLabel,
   PaymentMethod,
@@ -103,7 +103,16 @@ export function EditTransactionPage({ transactionId }: { transactionId: string }
   }
 
   const tagsForType = tags.data.filter((tag) => tag.kind === type);
+  const uncategorizedTag = findUncategorizedTag(tags.data, type);
+  const descriptionIsRequired = tagId === null || tagId === uncategorizedTag?.id;
   const isSaving = updateTransaction.isPending;
+
+  let descriptionLabel: string;
+  if (descriptionIsRequired) {
+    descriptionLabel = 'descrição';
+  } else {
+    descriptionLabel = 'descrição (opcional)';
+  }
 
   let saveButtonContent: ReactNode;
   if (isSaving) {
@@ -130,8 +139,16 @@ export function EditTransactionPage({ transactionId }: { transactionId: string }
       setErrorMessage('Informe um valor válido.');
       return;
     }
-    if (tagId === null) {
-      setErrorMessage('Escolha uma categoria.');
+
+    const resolvedTagId = tagId ?? uncategorizedTag?.id ?? null;
+    if (resolvedTagId === null) {
+      setErrorMessage('Não foi possível determinar a categoria. Tente novamente.');
+      return;
+    }
+
+    const normalizedDescription = normalizeOptionalText(description);
+    if (resolvedTagId === uncategorizedTag?.id && normalizedDescription === null) {
+      setErrorMessage('Descreva do que se trata, já que não escolheu uma categoria.');
       return;
     }
 
@@ -142,8 +159,8 @@ export function EditTransactionPage({ transactionId }: { transactionId: string }
           type,
           amount: parsedAmount,
           date: dateIso,
-          description: normalizeOptionalText(description),
-          tagId,
+          description: normalizedDescription,
+          tagId: resolvedTagId,
           paymentMethod,
         },
       });
@@ -193,7 +210,7 @@ export function EditTransactionPage({ transactionId }: { transactionId: string }
         </View>
 
         <View className="gap-[10px] px-6 pt-6">
-          <FieldLabel>descrição (opcional)</FieldLabel>
+          <FieldLabel>{descriptionLabel}</FieldLabel>
           <TextInput
             value={description}
             onChangeText={setDescription}
@@ -204,7 +221,7 @@ export function EditTransactionPage({ transactionId }: { transactionId: string }
         </View>
 
         <View className="gap-3 px-6 pt-6">
-          <FieldLabel>categoria</FieldLabel>
+          <FieldLabel>categoria (opcional)</FieldLabel>
           {tagsForType.length === 0 && <Text className="text-xs text-ct-muted">Nenhuma categoria ainda.</Text>}
           <View className="flex-row flex-wrap gap-2">
             {tagsForType.map((tag) => (

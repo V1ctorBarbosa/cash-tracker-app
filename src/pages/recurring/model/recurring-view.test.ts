@@ -9,7 +9,7 @@ import { buildActiveRecurringLabel, buildRecurringRows, countActiveRecurring } f
 // pure logic can be tested in isolation.
 jest.mock('@/shared/api/firebase', () => ({ auth: {} }));
 
-const Tags: TagDto[] = [{ id: 'tag-moradia', name: 'Moradia', color: '#8aa07f', kind: 'Expense' }];
+const Tags: TagDto[] = [{ id: 'tag-moradia', name: 'Moradia', color: '#8aa07f', kind: 'Expense', isSystemDefined: false }];
 
 function createRecurring(overrides: Partial<RecurringTransactionDto>): RecurringTransactionDto {
   return {

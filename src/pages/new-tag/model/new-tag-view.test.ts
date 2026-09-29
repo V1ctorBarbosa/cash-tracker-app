@@ -3,7 +3,7 @@ import type { TagDto } from '@/entities/tag';
 import { findReplacementCandidates } from './new-tag-view';
 
 function createTag(id: string, kind: TagDto['kind']): TagDto {
-  return { id, name: `Tag ${id}`, color: '#3f4a35', kind };
+  return { id, name: `Tag ${id}`, color: '#3f4a35', kind, isSystemDefined: false };
 }
 
 describe('findReplacementCandidates', () => {

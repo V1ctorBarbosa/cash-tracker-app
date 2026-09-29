@@ -20,7 +20,7 @@ const BaseTransaction: TransactionDto = {
   createdAt: '2026-09-10T18:32:00Z',
 };
 
-const Tags: TagDto[] = [{ id: 'tag-mercado', name: 'Mercado', color: '#000000', kind: 'Expense' }];
+const Tags: TagDto[] = [{ id: 'tag-mercado', name: 'Mercado', color: '#000000', kind: 'Expense', isSystemDefined: false }];
 
 describe('buildDeleteSummary', () => {
   test('formats an expense with a minus sign, "despesa", and a tag/method/date meta line', () => {

@@ -4,7 +4,7 @@ import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useCreateRecurringTransaction } from '@/entities/recurring-transaction';
-import { useTags } from '@/entities/tag';
+import { findUncategorizedTag, useTags } from '@/entities/tag';
 import { getPaymentMethodLabel, PaymentMethod, TransactionType, useCreateTransaction } from '@/entities/transaction';
 import { Colors, FontFamily, LoaderSize } from '@/constants/theme';
 import { formatDateBR, todayAsIsoDate } from '@/shared/lib/date';
@@ -14,6 +14,7 @@ import { normalizeOptionalText } from '@/shared/lib/text';
 import { Chip } from '@/shared/ui/Chip';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { Loader } from '@/shared/ui/Loader';
+import { FloatingNavContentClearance } from '@/shared/ui/NewTransactionFab';
 
 const PaymentMethodOptions = Object.values(PaymentMethod);
 
@@ -103,8 +104,17 @@ export function NewTransactionPage() {
   );
 
   const tagsForType = tags.data?.filter((tag) => tag.kind === type) ?? [];
+  const uncategorizedTag = findUncategorizedTag(tags.data ?? [], type);
+  const descriptionIsRequired = tagId === null || tagId === uncategorizedTag?.id;
 
   const isSaving = createTransaction.isPending || createRecurringTransaction.isPending;
+
+  let descriptionLabel: string;
+  if (descriptionIsRequired) {
+    descriptionLabel = 'descrição';
+  } else {
+    descriptionLabel = 'descrição (opcional)';
+  }
 
   let recurringLabel: string;
   if (isRecurring) {
@@ -144,12 +154,18 @@ export function NewTransactionPage() {
       setErrorMessage('Informe um valor válido.');
       return;
     }
-    if (tagId === null) {
-      setErrorMessage('Escolha uma categoria.');
+
+    const resolvedTagId = tagId ?? uncategorizedTag?.id ?? null;
+    if (resolvedTagId === null) {
+      setErrorMessage('Não foi possível determinar a categoria. Tente novamente.');
       return;
     }
 
     const normalizedDescription = normalizeOptionalText(description);
+    if (resolvedTagId === uncategorizedTag?.id && normalizedDescription === null) {
+      setErrorMessage('Descreva do que se trata, já que não escolheu uma categoria.');
+      return;
+    }
 
     try {
       if (isRecurring) {
@@ -158,7 +174,7 @@ export function NewTransactionPage() {
           type,
           amount: parsedAmount,
           description: normalizedDescription,
-          tagId,
+          tagId: resolvedTagId,
           paymentMethod,
           dayOfMonth,
           startDate: dateIso,
@@ -170,7 +186,7 @@ export function NewTransactionPage() {
           amount: parsedAmount,
           date: dateIso,
           description: normalizedDescription,
-          tagId,
+          tagId: resolvedTagId,
           paymentMethod,
         });
       }
@@ -183,7 +199,7 @@ export function NewTransactionPage() {
 
   return (
     <SafeAreaView className="flex-1 bg-ct-paper">
-      <ScrollView contentContainerClassName="pb-8" showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ paddingBottom: FloatingNavContentClearance }} showsVerticalScrollIndicator={false}>
         <View className="gap-5 px-6 pt-[26px]">
           <View className="flex-row items-baseline justify-between">
             <Text style={{ fontFamily: FontFamily.displayWordmark }} className="text-[15px] text-ct-ink">
@@ -217,7 +233,7 @@ export function NewTransactionPage() {
         </View>
 
         <View className="gap-[10px] px-6 pt-6">
-          <FieldLabel>descrição (opcional)</FieldLabel>
+          <FieldLabel>{descriptionLabel}</FieldLabel>
           <TextInput
             value={description}
             onChangeText={setDescription}
@@ -228,7 +244,7 @@ export function NewTransactionPage() {
         </View>
 
         <View className="gap-3 px-6 pt-6">
-          <FieldLabel>categoria</FieldLabel>
+          <FieldLabel>categoria (opcional)</FieldLabel>
           {tagsForType.length === 0 && <Text className="text-xs text-ct-muted">Nenhuma categoria ainda.</Text>}
           <View className="flex-row flex-wrap gap-2">
             {tagsForType.map((tag) => (

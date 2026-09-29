@@ -19,7 +19,7 @@ const BaseTransaction = {
   createdAt: '2026-09-10T18:32:00Z',
 };
 
-const Tags = [{ id: 'tag-mercado', name: 'Mercado', color: '#000000', kind: 'Expense' as const }];
+const Tags = [{ id: 'tag-mercado', name: 'Mercado', color: '#000000', kind: 'Expense' as const, isSystemDefined: false }];
 
 describe('buildDetailRows', () => {
   test('resolves the tag name, formats the payment method, date, and timestamp, and shortens the id', () => {

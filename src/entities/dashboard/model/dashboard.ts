@@ -3,9 +3,16 @@ import { useQuery } from '@tanstack/react-query';
 import { getJson } from '@/shared/api/http-client';
 
 export type MonthlySummaryDto = { month: string; income: number; expense: number };
-export type TagAmountDto = { tagId: string; tagName: string; amount: number };
+export type TagAmountDto = { tagId: string; tagName: string; tagColor: string; amount: number };
 export type PaymentMethodAmountDto = { paymentMethod: string; amount: number };
-export type BudgetProgressDto = { tagId: string; tagName: string; month: string; limitAmount: number; actualAmount: number };
+export type BudgetProgressDto = {
+  tagId: string;
+  tagName: string;
+  tagColor: string;
+  month: string;
+  limitAmount: number;
+  actualAmount: number;
+};
 
 export type DashboardDto = {
   totalIncome: number;

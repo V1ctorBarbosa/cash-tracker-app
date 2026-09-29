@@ -59,9 +59,16 @@ export function CategoriesPage() {
             className="flex-row items-center gap-[14px] border-b border-ct-row-divider px-6 py-[15px]">
             <View className="h-[22px] w-[22px]" style={{ backgroundColor: tag.color }} />
             <View className="min-w-0 flex-1">
-              <Text className="text-[15.5px] font-medium text-ct-ink" numberOfLines={1}>
-                {tag.name}
-              </Text>
+              <View className="flex-row items-center gap-2">
+                <Text className="text-[15.5px] font-medium text-ct-ink" numberOfLines={1}>
+                  {tag.name}
+                </Text>
+                {tag.isSystemDefined && (
+                  <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 0.4 }} className="text-[9px] uppercase text-ct-muted">
+                    automática
+                  </Text>
+                )}
+              </View>
               <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 0.4 }} className="text-[10px] text-ct-muted">
                 {tag.kindLabel} · {tag.usesLabel}
               </Text>
