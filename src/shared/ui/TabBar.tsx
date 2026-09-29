@@ -1,6 +1,7 @@
 import type { BottomTabBarProps } from 'expo-router/tabs';
 import type { ComponentType } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Colors, FontFamily } from '@/constants/theme';
@@ -15,6 +16,7 @@ export const NewTransactionRouteName = 'new';
 export const IslandMargin = 36;
 export const IslandHeight = 64;
 const IconSize = 19;
+const ColorTransitionDuration = 240;
 
 const TabLabels: Record<string, string> = {
   index: 'início',
@@ -41,22 +43,44 @@ function TabBarItem({
   isFocused: boolean;
   onPress: () => void;
 }) {
-  let color: string;
-  let backgroundColor: string;
+  // The SVG icon's own stroke color still swaps instantly -- animating it would mean wrapping
+  // each icon component with createAnimatedComponent/useAnimatedProps for comparatively little
+  // visual payoff, since the pill background and label already carry the transition.
+  let iconColor: string;
   if (isFocused) {
-    color = Colors.light.card;
-    backgroundColor = Colors.light.ink;
+    iconColor = Colors.light.card;
   } else {
-    color = Colors.light.navInactive;
-    backgroundColor = 'transparent';
+    iconColor = Colors.light.navInactive;
   }
 
+  const animatedContainerStyle = useAnimatedStyle(() => {
+    let targetBackground: string = Colors.light.ink;
+    if (!isFocused) {
+      targetBackground = 'transparent';
+    }
+
+    return { backgroundColor: withTiming(targetBackground, { duration: ColorTransitionDuration }) };
+  });
+
+  const animatedLabelStyle = useAnimatedStyle(() => {
+    let targetColor: string = Colors.light.card;
+    if (!isFocused) {
+      targetColor = Colors.light.navInactive;
+    }
+
+    return { color: withTiming(targetColor, { duration: ColorTransitionDuration }) };
+  });
+
   return (
-    <Pressable onPress={onPress} style={{ backgroundColor }} className="items-center gap-1 rounded-full px-4 py-2">
-      <Icon size={IconSize} color={color} />
-      <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 0.4, color }} className="text-[9px] uppercase">
-        {label}
-      </Text>
+    <Pressable onPress={onPress}>
+      <Animated.View style={animatedContainerStyle} className="items-center gap-1 rounded-full px-4 py-2">
+        <Icon size={IconSize} color={iconColor} />
+        <Animated.Text
+          style={[{ fontFamily: FontFamily.mono, letterSpacing: 0.4 }, animatedLabelStyle]}
+          className="text-[9px] uppercase">
+          {label}
+        </Animated.Text>
+      </Animated.View>
     </Pressable>
   );
 }
