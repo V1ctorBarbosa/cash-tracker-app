@@ -1,5 +1,5 @@
-import { ProfilePage } from '@/pages/profile/ProfilePage';
+import { UserProfilePage } from '@/pages/user-profile/UserProfilePage';
 
 export default function ProfileRoute() {
-  return <ProfilePage />;
+  return <UserProfilePage />;
 }

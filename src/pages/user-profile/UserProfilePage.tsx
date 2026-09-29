@@ -37,7 +37,7 @@ function ProfileRow({ label, meta, onPress }: { label: string; meta: string; onP
   );
 }
 
-export function ProfilePage() {
+export function UserProfilePage() {
   const router = useRouter();
   const session = useSession();
   const tags = useTags();

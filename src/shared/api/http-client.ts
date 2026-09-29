@@ -1,4 +1,4 @@
-import { auth } from '@/shared/api/firebase';
+import { authGateway } from '@/shared/api/auth-gateway';
 import { apiBaseUrl } from '@/shared/config/api-config';
 
 export class ApiError extends Error {
@@ -52,19 +52,20 @@ export async function deleteRequest(path: string): Promise<void> {
 }
 
 async function buildAuthHeaders(): Promise<Record<string, string>> {
-  const currentUser = auth.currentUser;
-  if (currentUser === null) {
-    console.error('buildAuthHeaders: auth.currentUser is null -- no signed-in user to get a token from.');
-    throw new Error('Cannot call the API without a signed-in user.');
-  }
-
+  let idToken: string | null;
   try {
-    const idToken = await currentUser.getIdToken();
-    return { Authorization: `Bearer ${idToken}` };
+    idToken = await authGateway.getIdToken();
   } catch (error) {
     console.error('buildAuthHeaders: getIdToken() failed.', error);
     throw error;
   }
+
+  if (idToken === null) {
+    console.error('buildAuthHeaders: no signed-in user to get a token from.');
+    throw new Error('Cannot call the API without a signed-in user.');
+  }
+
+  return { Authorization: `Bearer ${idToken}` };
 }
 
 async function parseJsonOrThrow<TResponse>(response: Response): Promise<TResponse> {
