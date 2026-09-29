@@ -10,6 +10,7 @@ import { getMonthDateRange, getTrailingMonthsRange, formatMonthLong } from '@/sh
 import { formatAmount, formatCurrency } from '@/shared/lib/format';
 import { useSelectedMonth } from '@/shared/lib/selected-month-context';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
+import { FloatingNavContentClearance } from '@/shared/ui/NewTransactionFab';
 import { PageLoader } from '@/shared/ui/PageLoader';
 
 import { buildCategoryDonut, buildMonthBars, buildPaymentMethodSegments, type CategoryDonut } from './model/dashboard-view';
@@ -117,7 +118,7 @@ export function DashboardPage() {
 
   return (
     <SafeAreaView className="flex-1 bg-ct-paper">
-      <ScrollView contentContainerClassName="pb-8" showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ paddingBottom: FloatingNavContentClearance }} showsVerticalScrollIndicator={false}>
         <View className="gap-[22px] px-6 pb-[18px] pt-[26px]">
           <View className="flex-row items-baseline justify-between">
             <Text style={{ fontFamily: FontFamily.displayWordmark }} className="text-[15px] text-ct-ink">

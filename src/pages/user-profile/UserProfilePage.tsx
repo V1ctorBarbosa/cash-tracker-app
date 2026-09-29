@@ -10,6 +10,7 @@ import { signOutOfSession } from '@/features/auth';
 import { FontFamily } from '@/constants/theme';
 import { formatMonthShort } from '@/shared/lib/date';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
+import { FloatingNavContentClearance } from '@/shared/ui/NewTransactionFab';
 
 import { computeTransactionStats, initialOf } from './model/profile-view';
 
@@ -121,7 +122,7 @@ export function UserProfilePage() {
         <ProfileRow label="Exportar dados" meta="csv" />
       </View>
 
-      <View className="mt-auto px-6 pb-6 pt-7">
+      <View className="mt-auto px-6 pt-7" style={{ paddingBottom: FloatingNavContentClearance }}>
         <Pressable onPress={() => signOutOfSession()} className="items-center border border-ct-ink py-[15px]">
           <Text className="text-[15px] font-semibold text-ct-ink">sair da conta</Text>
         </Pressable>
