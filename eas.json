@@ -12,7 +12,13 @@
       }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://qvibxvu5iihrvvd3soizv32oty0azpav.lambda-url.us-east-2.on.aws"
+      }
     },
     "production": {
       "autoIncrement": true
