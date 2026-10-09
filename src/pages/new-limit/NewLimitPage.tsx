@@ -54,7 +54,7 @@ export function NewLimitPage({ initialYear, initialMonth }: { initialYear: numbe
   const monthOptions = buildMonthOptions(initialYear, initialMonth);
   const selectedMonth = monthOptions[selectedMonthIndex];
   const trailingRange = getTrailingMonthsRange(selectedMonth.year, selectedMonth.month, TrailingMonthsForAverage);
-  const dashboard = useDashboard(trailingRange.from, trailingRange.to);
+  const dashboard = useDashboard({ from: trailingRange.from, to: trailingRange.to });
 
   if (tags.isPending || dashboard.isPending) {
     return <PageLoader />;

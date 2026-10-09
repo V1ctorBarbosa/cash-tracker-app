@@ -24,9 +24,24 @@ export type DashboardDto = {
   budgets: BudgetProgressDto[];
 };
 
-export function useDashboard(from: string, to: string) {
+/**
+ * Every figure covers [from, to]; `trendFrom`, when given, only extends `monthlySummary` further
+ * back -- so a single request serves one month's breakdown alongside a longer trend.
+ */
+export type DashboardFilter = { from: string; to: string; trendFrom?: string };
+
+export function buildDashboardUrl(filter: DashboardFilter): string {
+  const params = new URLSearchParams({ from: filter.from, to: filter.to });
+  if (filter.trendFrom !== undefined) {
+    params.set('trendFrom', filter.trendFrom);
+  }
+
+  return `/dashboard?${params.toString()}`;
+}
+
+export function useDashboard(filter: DashboardFilter) {
   return useQuery({
-    queryKey: ['dashboard', from, to] as const,
-    queryFn: () => getJson<DashboardDto>(`/dashboard?from=${from}&to=${to}`),
+    queryKey: ['dashboard', filter.from, filter.to, filter.trendFrom ?? null] as const,
+    queryFn: () => getJson<DashboardDto>(buildDashboardUrl(filter)),
   });
 }

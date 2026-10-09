@@ -1,5 +1,7 @@
 export {
+  buildDashboardUrl,
   useDashboard,
+  type DashboardFilter,
   type DashboardDto,
   type MonthlySummaryDto,
   type TagAmountDto,
