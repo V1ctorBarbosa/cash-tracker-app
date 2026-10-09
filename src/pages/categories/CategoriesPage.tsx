@@ -3,7 +3,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTags } from '@/entities/tag';
-import { useTransactions } from '@/entities/transaction';
+import { useTransactionStatistics } from '@/entities/transaction';
 import { FontFamily } from '@/constants/theme';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { PageLoader } from '@/shared/ui/PageLoader';
@@ -13,13 +13,13 @@ import { buildTagRows } from './model/categories-view';
 export function CategoriesPage() {
   const router = useRouter();
   const tags = useTags();
-  const transactions = useTransactions();
+  const transactionStatistics = useTransactionStatistics();
 
-  if (tags.isPending || transactions.isPending) {
+  if (tags.isPending || transactionStatistics.isPending) {
     return <PageLoader />;
   }
 
-  if (tags.isError || transactions.isError) {
+  if (tags.isError || transactionStatistics.isError) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-ct-paper px-6">
         <ErrorMessage />
@@ -27,7 +27,7 @@ export function CategoriesPage() {
     );
   }
 
-  const tagRows = buildTagRows(tags.data, transactions.data);
+  const tagRows = buildTagRows(tags.data, transactionStatistics.data.tagUsages);
 
   return (
     <SafeAreaView className="flex-1 bg-ct-paper">
