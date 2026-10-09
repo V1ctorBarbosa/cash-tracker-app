@@ -1,22 +1,37 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTags } from '@/entities/tag';
-import { useTransactions } from '@/entities/transaction';
+import { useDeleteTransactionsInRange, useTransactions } from '@/entities/transaction';
 import { Colors, FontFamily } from '@/constants/theme';
-import { formatDateRangeBR, formatMonthLong, getMonthDateRange, normalizeDateRange, todayAsIsoDate } from '@/shared/lib/date';
+import { normalizeDateRange, todayAsIsoDate } from '@/shared/lib/date';
+import { confirmDestructiveAction, showAlert } from '@/shared/lib/confirm';
 import { takePendingPickedDate } from '@/shared/lib/date-picker-result';
 import { useSelectedMonth } from '@/shared/lib/selected-month-context';
 import { Chip } from '@/shared/ui/Chip';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { FloatingNavContentClearance } from '@/shared/ui/NewTransactionFab';
 import { PageLoader } from '@/shared/ui/PageLoader';
+import { useToast } from '@/shared/ui/toast/ToastProvider';
 
-import { buildHistorySummary, filterTransactions, HistoryFilter } from './model/history-view';
+import {
+  buildDeleteMonthButtonLabel,
+  buildDeleteMonthPrompt,
+  buildDeletedTransactionsToast,
+  buildHistorySummary,
+  canDeleteMonth,
+  type DateRange,
+  filterTransactions,
+  HistoryFilter,
+  resolveHistoryPeriod,
+} from './model/history-view';
 
-type DateRange = { from: string; to: string };
+const DeleteMonthErrorTitle = 'Não foi possível apagar';
+const DeleteMonthErrorMessage = 'Tente novamente em instantes.';
+
 type RangePickerStep = 'from' | 'to' | null;
 
 const FilterOptions: { value: HistoryFilter; label: string }[] = [
@@ -29,6 +44,7 @@ const FilterOptions: { value: HistoryFilter; label: string }[] = [
 export function HistoryPage() {
   const router = useRouter();
   const { year, month, goToPreviousMonth, goToNextMonth } = useSelectedMonth();
+  const { showToast } = useToast();
 
   const [searchText, setSearchText] = useState('');
   const [filter, setFilter] = useState<HistoryFilter>(HistoryFilter.All);
@@ -77,18 +93,11 @@ export function HistoryPage() {
     setCustomRange(null);
   }
 
-  let range: DateRange;
-  let periodLabel: string;
-  if (customRange !== null) {
-    range = customRange;
-    periodLabel = formatDateRangeBR(customRange);
-  } else {
-    range = getMonthDateRange(year, month);
-    periodLabel = formatMonthLong(year, month);
-  }
+  const { range, label: periodLabel } = resolveHistoryPeriod(customRange, year, month);
 
   const transactions = useTransactions({ from: range.from, to: range.to });
   const tags = useTags();
+  const deleteTransactionsInRange = useDeleteTransactionsInRange();
 
   if (transactions.isPending || tags.isPending) {
     return <PageLoader />;
@@ -104,6 +113,21 @@ export function HistoryPage() {
 
   const filteredTransactions = filterTransactions(transactions.data, tags.data, searchText, filter);
   const summary = buildHistorySummary(filteredTransactions, tags.data);
+  const monthTransactionCount = transactions.data.length;
+  const isDeleteMonthVisible = canDeleteMonth(customRange, monthTransactionCount);
+  const deleteMonthButtonLabel = buildDeleteMonthButtonLabel(deleteTransactionsInRange.isPending);
+
+  function handlePressDeleteMonth() {
+    const prompt = buildDeleteMonthPrompt(periodLabel, monthTransactionCount);
+    confirmDestructiveAction(prompt.title, prompt.message, prompt.confirmLabel, deleteMonth);
+  }
+
+  function deleteMonth() {
+    deleteTransactionsInRange.mutate(range, {
+      onSuccess: (result) => showToast(buildDeletedTransactionsToast(result.deletedCount)),
+      onError: () => showAlert(DeleteMonthErrorTitle, DeleteMonthErrorMessage),
+    });
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-ct-paper">
@@ -141,11 +165,22 @@ export function HistoryPage() {
         )}
 
         {customRange === null && (
-          <Pressable onPress={handlePressPickCustomRange} hitSlop={8} className="self-start">
-            <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 0.6 }} className="text-[10px] uppercase text-ct-muted">
-              período customizado ›
-            </Text>
-          </Pressable>
+          <View className="flex-row items-center justify-between">
+            <Pressable onPress={handlePressPickCustomRange} hitSlop={8}>
+              <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 0.6 }} className="text-[10px] uppercase text-ct-muted">
+                período customizado ›
+              </Text>
+            </Pressable>
+            {isDeleteMonthVisible && (
+              <Animated.View entering={FadeIn} exiting={FadeOut}>
+                <Pressable onPress={handlePressDeleteMonth} disabled={deleteTransactionsInRange.isPending} hitSlop={8}>
+                  <Text style={{ fontFamily: FontFamily.mono, letterSpacing: 0.6 }} className="text-[10px] uppercase text-ct-danger">
+                    {deleteMonthButtonLabel}
+                  </Text>
+                </Pressable>
+              </Animated.View>
+            )}
+          </View>
         )}
 
         <TextInput

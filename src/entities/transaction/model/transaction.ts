@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { deleteRequest, getJson, postJson, putJson } from '@/shared/api/http-client';
+import { deleteJson, deleteRequest, getJson, postJson, putJson } from '@/shared/api/http-client';
 
 export const TransactionType = { Income: 'Income', Expense: 'Expense' } as const;
 export type TransactionType = (typeof TransactionType)[keyof typeof TransactionType];
@@ -41,6 +41,8 @@ export type TransactionDto = {
   recurringTransactionId: string | null;
   createdAt: string;
 };
+
+export type DeletedTransactionsDto = { deletedCount: number };
 
 export type CreateTransactionRequest = {
   type: TransactionType;
@@ -129,6 +131,19 @@ export function useDeleteTransaction() {
 
   return useMutation({
     mutationFn: (transactionId: string) => deleteRequest(`/transactions/${transactionId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: DashboardQueryKeyPrefix });
+    },
+  });
+}
+
+/** Deletes every transaction dated within the inclusive range -- the API requires both bounds, so this can never wipe the whole history. */
+export function useDeleteTransactionsInRange() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (range: { from: string; to: string }) => deleteJson<DeletedTransactionsDto>(buildTransactionsUrl(range)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: DashboardQueryKeyPrefix });

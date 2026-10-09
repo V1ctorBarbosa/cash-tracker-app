@@ -1,7 +1,17 @@
 import type { TagDto } from '@/entities/tag';
 import type { TransactionDto } from '@/entities/transaction';
+import { formatDateRangeBR, formatMonthLong } from '@/shared/lib/date';
 
-import { buildHistorySummary, filterTransactions, HistoryFilter } from './history-view';
+import {
+  buildDeleteMonthButtonLabel,
+  buildDeleteMonthPrompt,
+  buildDeletedTransactionsToast,
+  buildHistorySummary,
+  canDeleteMonth,
+  filterTransactions,
+  HistoryFilter,
+  resolveHistoryPeriod,
+} from './history-view';
 
 // getPaymentMethodLabel (used by buildHistorySummary) lives in a module that also exports TanStack
 // Query hooks importing the Firebase client -- mocked so this pure logic can be tested without
@@ -141,5 +151,82 @@ describe('buildHistorySummary', () => {
     const summary = buildHistorySummary(transactions, Tags);
 
     expect(summary.items[0].desc).toBe('Mercado');
+  });
+});
+
+describe('resolveHistoryPeriod', () => {
+  test('uses the selected month, with its full date range, when there is no custom range', () => {
+    const period = resolveHistoryPeriod(null, 2026, 9);
+
+    expect(period.range).toEqual({ from: '2026-09-01', to: '2026-09-30' });
+    expect(period.label).toBe(formatMonthLong(2026, 9));
+  });
+
+  test('uses the custom range, formatted as a date range, when one was picked', () => {
+    const customRange = { from: '2026-09-10', to: '2026-10-05' };
+
+    const period = resolveHistoryPeriod(customRange, 2026, 9);
+
+    expect(period.range).toBe(customRange);
+    expect(period.label).toBe(formatDateRangeBR(customRange));
+  });
+});
+
+describe('canDeleteMonth', () => {
+  test('is true for the selected month when it has transactions', () => {
+    expect(canDeleteMonth(null, 3)).toBe(true);
+  });
+
+  test('is false when the month has no transactions', () => {
+    expect(canDeleteMonth(null, 0)).toBe(false);
+  });
+
+  test('is false for a custom range, even when it has transactions', () => {
+    expect(canDeleteMonth({ from: '2026-09-10', to: '2026-10-05' }, 3)).toBe(false);
+  });
+});
+
+describe('buildDeleteMonthButtonLabel', () => {
+  test('reads "apagar mês" while idle', () => {
+    expect(buildDeleteMonthButtonLabel(false)).toBe('apagar mês');
+  });
+
+  test('reads "apagando…" while the delete is in flight', () => {
+    expect(buildDeleteMonthButtonLabel(true)).toBe('apagando…');
+  });
+});
+
+describe('buildDeleteMonthPrompt', () => {
+  test('names the month in the title and asks to confirm with "Apagar"', () => {
+    const prompt = buildDeleteMonthPrompt('setembro 2026', 12);
+
+    expect(prompt.title).toBe('Apagar setembro 2026?');
+    expect(prompt.confirmLabel).toBe('Apagar');
+  });
+
+  test('states the plural count, that it is permanent, and that recurring ones do not come back', () => {
+    const prompt = buildDeleteMonthPrompt('setembro 2026', 12);
+
+    expect(prompt.message).toContain('12 lançamentos de setembro 2026 serão apagados');
+    expect(prompt.message).toContain('permanente');
+    expect(prompt.message).toContain('recorrentes');
+    expect(prompt.message).toContain('não pode ser desfeito');
+  });
+
+  test('uses the singular form for a single transaction', () => {
+    const prompt = buildDeleteMonthPrompt('setembro 2026', 1);
+
+    expect(prompt.message).toContain('1 lançamento de setembro 2026 será apagado');
+  });
+});
+
+describe('buildDeletedTransactionsToast', () => {
+  test.each([
+    [0, 'Nenhum lançamento apagado'],
+    [1, '1 lançamento apagado'],
+    [2, '2 lançamentos apagados'],
+    [37, '37 lançamentos apagados'],
+  ])('for %i deleted transactions reads "%s"', (deletedCount, expected) => {
+    expect(buildDeletedTransactionsToast(deletedCount)).toBe(expected);
   });
 });

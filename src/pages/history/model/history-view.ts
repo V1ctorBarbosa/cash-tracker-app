@@ -1,6 +1,7 @@
 import { Colors } from '@/constants/theme';
 import type { TagDto } from '@/entities/tag';
 import { getPaymentMethodLabel, TransactionType, type TransactionDto } from '@/entities/transaction';
+import { formatDateRangeBR, formatMonthLong, getMonthDateRange } from '@/shared/lib/date';
 import { formatAmount } from '@/shared/lib/format';
 import { normalizeSearchText } from '@/shared/lib/text';
 
@@ -23,6 +24,63 @@ export type HistoryItem = {
 };
 
 export type HistorySummary = { total: string; items: HistoryItem[] };
+
+export type DateRange = { from: string; to: string };
+export type HistoryPeriod = { range: DateRange; label: string };
+export type DeleteMonthPrompt = { title: string; message: string; confirmLabel: string };
+
+const DeleteMonthButtonLabel = 'apagar mês';
+const DeletingMonthButtonLabel = 'apagando…';
+const DeleteConfirmLabel = 'Apagar';
+
+/** The date range the page queries and the label shown for it: a custom range when one was picked, otherwise the selected month. */
+export function resolveHistoryPeriod(customRange: DateRange | null, year: number, month: number): HistoryPeriod {
+  if (customRange !== null) {
+    return { range: customRange, label: formatDateRangeBR(customRange) };
+  }
+
+  return { range: getMonthDateRange(year, month), label: formatMonthLong(year, month) };
+}
+
+/** Deleting wipes a whole calendar month, so it is only offered for the selected month (not a custom range) and only when there is something to delete. */
+export function canDeleteMonth(customRange: DateRange | null, monthTransactionCount: number): boolean {
+  return customRange === null && monthTransactionCount > 0;
+}
+
+export function buildDeleteMonthButtonLabel(isDeleting: boolean): string {
+  if (isDeleting) {
+    return DeletingMonthButtonLabel;
+  }
+
+  return DeleteMonthButtonLabel;
+}
+
+/** `monthTransactionCount` must be the month's full count, not the filtered list's: the delete ignores the search text and filter chips. */
+export function buildDeleteMonthPrompt(monthLabel: string, monthTransactionCount: number): DeleteMonthPrompt {
+  let countPhrase: string;
+  if (monthTransactionCount === 1) {
+    countPhrase = `1 lançamento de ${monthLabel} será apagado`;
+  } else {
+    countPhrase = `${monthTransactionCount} lançamentos de ${monthLabel} serão apagados`;
+  }
+
+  return {
+    title: `Apagar ${monthLabel}?`,
+    message: `${countPhrase} de forma permanente, inclusive os recorrentes, que não voltam a aparecer neste mês. Isso não pode ser desfeito.`,
+    confirmLabel: DeleteConfirmLabel,
+  };
+}
+
+export function buildDeletedTransactionsToast(deletedCount: number): string {
+  if (deletedCount === 0) {
+    return 'Nenhum lançamento apagado';
+  }
+  if (deletedCount === 1) {
+    return '1 lançamento apagado';
+  }
+
+  return `${deletedCount} lançamentos apagados`;
+}
 
 export function filterTransactions(transactions: TransactionDto[], tags: TagDto[], searchText: string, filter: HistoryFilter): TransactionDto[] {
   const normalizedSearch = normalizeSearchText(searchText);
