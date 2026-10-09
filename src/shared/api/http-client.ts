@@ -40,6 +40,16 @@ export async function postJson<TRequest, TResponse>(path: string, requestBody: T
   return parseJsonOrThrow<TResponse>(response);
 }
 
+/** A DELETE whose response carries a JSON body, e.g. how many records a bulk delete removed. */
+export async function deleteJson<TResponse>(path: string): Promise<TResponse> {
+  const response = await fetch(`${apiBaseUrl}${path}`, {
+    method: 'DELETE',
+    headers: await buildAuthHeaders(),
+  });
+
+  return parseJsonOrThrow<TResponse>(response);
+}
+
 export async function deleteRequest(path: string): Promise<void> {
   const response = await fetch(`${apiBaseUrl}${path}`, {
     method: 'DELETE',
