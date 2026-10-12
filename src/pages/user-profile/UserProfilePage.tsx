@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRecurringTransactions } from '@/entities/recurring-transaction';
 import { useSession } from '@/entities/session';
 import { useTags } from '@/entities/tag';
-import { useTransactions } from '@/entities/transaction';
+import { EmptyTransactionStatistics, useTransactionStatistics } from '@/entities/transaction';
 import { signOutOfSession } from '@/features/auth';
 import { FontFamily } from '@/constants/theme';
 import { formatMonthShort } from '@/shared/lib/date';
@@ -43,7 +43,7 @@ export function UserProfilePage() {
   const session = useSession();
   const tags = useTags();
   const recurringTransactions = useRecurringTransactions();
-  const transactions = useTransactions();
+  const transactionStatistics = useTransactionStatistics();
 
   let displayName = 'Você';
   let email = '';
@@ -56,7 +56,7 @@ export function UserProfilePage() {
     }
   }
 
-  if (transactions.isError) {
+  if (transactionStatistics.isError) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-ct-paper px-6">
         <ErrorMessage />
@@ -64,7 +64,7 @@ export function UserProfilePage() {
     );
   }
 
-  const stats = computeTransactionStats(transactions.data ?? []);
+  const stats = computeTransactionStats(transactionStatistics.data ?? EmptyTransactionStatistics);
   const activeRecurringCount = recurringTransactions.data?.filter((recurring) => recurring.active).length;
   const today = new Date();
   const currentMonthLabel = formatMonthShort(today.getFullYear(), today.getMonth() + 1);

@@ -1,6 +1,8 @@
 export {
   useTransactions,
   useTransaction,
+  useTransactionStatistics,
+  EmptyTransactionStatistics,
   useCreateTransaction,
   useUpdateTransaction,
   useDeleteTransaction,
@@ -9,6 +11,8 @@ export {
   TransactionType,
   PaymentMethod,
   type TransactionDto,
+  type TransactionStatisticsDto,
+  type TagUsageDto,
   type CreateTransactionRequest,
   type DeletedTransactionsDto,
 } from './model/transaction';
