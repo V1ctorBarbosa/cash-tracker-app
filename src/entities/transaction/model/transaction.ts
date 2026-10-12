@@ -94,6 +94,28 @@ export function useTransactions(filter: TransactionsFilter = {}, options: { enab
   });
 }
 
+export type TagUsageDto = { tagId: string; transactionCount: number };
+
+/** All-time figures; `firstTransactionDate` is null when the user has no transactions yet. */
+export type TransactionStatisticsDto = {
+  transactionCount: number;
+  firstTransactionDate: string | null;
+  tagUsages: TagUsageDto[];
+};
+
+export const EmptyTransactionStatistics: TransactionStatisticsDto = { transactionCount: 0, firstTransactionDate: null, tagUsages: [] };
+
+// Nested under the 'transactions' prefix so every mutation that already invalidates
+// ['transactions'] refreshes these counts too, with no extra invalidation to keep in sync.
+const TransactionStatisticsQueryKey = ['transactions', 'statistics'] as const;
+
+export function useTransactionStatistics() {
+  return useQuery({
+    queryKey: TransactionStatisticsQueryKey,
+    queryFn: () => getJson<TransactionStatisticsDto>('/transactions/statistics'),
+  });
+}
+
 export function useTransaction(transactionId: string) {
   return useQuery({
     queryKey: ['transactions', transactionId] as const,

@@ -1,22 +1,16 @@
-import type { TransactionDto } from '@/entities/transaction';
+import type { TransactionStatisticsDto } from '@/entities/transaction';
 import { formatMonthShort } from '@/shared/lib/date';
 
 const NoTransactionsSinceLabel = '—';
 
-export function computeTransactionStats(transactions: TransactionDto[]): { count: number; sinceLabel: string } {
-  if (transactions.length === 0) {
-    return { count: 0, sinceLabel: NoTransactionsSinceLabel };
+export function computeTransactionStats(statistics: TransactionStatisticsDto): { count: number; sinceLabel: string } {
+  if (statistics.firstTransactionDate === null) {
+    return { count: statistics.transactionCount, sinceLabel: NoTransactionsSinceLabel };
   }
 
-  const earliestDate = transactions.reduce((earliest, transaction) => {
-    if (transaction.date < earliest) {
-      return transaction.date;
-    }
-    return earliest;
-  }, transactions[0].date);
-  const [year, month] = earliestDate.split('-').map(Number);
+  const [year, month] = statistics.firstTransactionDate.split('-').map(Number);
 
-  return { count: transactions.length, sinceLabel: formatMonthShort(year, month) };
+  return { count: statistics.transactionCount, sinceLabel: formatMonthShort(year, month) };
 }
 
 export function initialOf(name: string): string {

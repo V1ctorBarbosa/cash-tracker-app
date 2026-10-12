@@ -1,31 +1,21 @@
-import type { TransactionDto } from '@/entities/transaction';
+import type { TransactionStatisticsDto } from '@/entities/transaction';
 
 import { computeTransactionStats, initialOf } from './profile-view';
 
-function createTransaction(date: string): TransactionDto {
-  return {
-    id: `transaction-${date}`,
-    type: 'Expense',
-    amount: 10,
-    date,
-    description: 'Descrição',
-    tagId: 'tag-1',
-    paymentMethod: 'Pix',
-    recurringTransactionId: null,
-    createdAt: `${date}T12:00:00Z`,
-  };
+function createStatistics(transactionCount: number, firstTransactionDate: string | null): TransactionStatisticsDto {
+  return { transactionCount, firstTransactionDate, tagUsages: [] };
 }
 
 describe('computeTransactionStats', () => {
-  test('counts transactions and reports the earliest month as "since"', () => {
-    const stats = computeTransactionStats([createTransaction('2026-06-15'), createTransaction('2026-01-10'), createTransaction('2026-03-01')]);
+  test('reports the transaction count and the first transaction month as "since"', () => {
+    const stats = computeTransactionStats(createStatistics(3, '2026-01-10'));
 
     expect(stats.count).toBe(3);
     expect(stats.sinceLabel).toBe('jan 2026');
   });
 
   test('returns a placeholder when there are no transactions', () => {
-    const stats = computeTransactionStats([]);
+    const stats = computeTransactionStats(createStatistics(0, null));
 
     expect(stats.count).toBe(0);
     expect(stats.sinceLabel).toBe('—');
