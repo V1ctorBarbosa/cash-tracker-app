@@ -53,7 +53,7 @@ export function BudgetPage() {
   const router = useRouter();
   const { year, month } = useSelectedMonth();
   const range = getMonthDateRange(year, month);
-  const dashboard = useDashboard(range.from, range.to);
+  const dashboard = useDashboard({ from: range.from, to: range.to });
 
   if (dashboard.isPending) {
     return <PageLoader />;

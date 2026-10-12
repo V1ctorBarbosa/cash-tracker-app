@@ -15,7 +15,8 @@ import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { useSession } from '@/entities/session';
-import { queryClient } from '@/shared/api/query-client';
+import { authGateway } from '@/shared/api/auth-gateway';
+import { clearQueryCacheOnSignOut, queryClient } from '@/shared/api/query-client';
 
 import '@/global.css';
 
@@ -35,6 +36,8 @@ export default function RootLayout() {
   });
 
   const isReady = fontsLoaded && session.status !== 'loading';
+
+  useEffect(() => clearQueryCacheOnSignOut(authGateway, queryClient), []);
 
   useEffect(() => {
     if (isReady) {

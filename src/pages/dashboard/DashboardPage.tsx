@@ -186,8 +186,7 @@ export function DashboardPage() {
   const monthRange = getMonthDateRange(year, month);
   const trailingRange = getTrailingMonthsRange(year, month, TrailingMonthsCount);
 
-  const monthDashboard = useDashboard(monthRange.from, monthRange.to);
-  const trailingDashboard = useDashboard(trailingRange.from, trailingRange.to);
+  const dashboardQuery = useDashboard({ from: monthRange.from, to: monthRange.to, trendFrom: trailingRange.from });
 
   // Covers the whole scrollable page, not just the balance card, so changing month doesn't
   // depend on landing a swipe on one small block -- only the card itself visually follows the
@@ -277,11 +276,11 @@ export function DashboardPage() {
     checkReveal();
   }
 
-  if (monthDashboard.isPending || trailingDashboard.isPending) {
+  if (dashboardQuery.isPending) {
     return <PageLoader />;
   }
 
-  if (monthDashboard.isError || trailingDashboard.isError) {
+  if (dashboardQuery.isError) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-ct-paper px-6">
         <ErrorMessage />
@@ -289,10 +288,10 @@ export function DashboardPage() {
     );
   }
 
-  const dashboard = monthDashboard.data;
+  const dashboard = dashboardQuery.data;
   const categoryDonut = buildCategoryDonut(dashboard.spendByTag);
   const paymentMethodSegments = buildPaymentMethodSegments(dashboard.spendByPaymentMethod);
-  const monthBars = buildMonthBars(trailingDashboard.data.monthlySummary);
+  const monthBars = buildMonthBars(dashboard.monthlySummary);
 
   return (
     <SafeAreaView className="flex-1 bg-ct-paper">
